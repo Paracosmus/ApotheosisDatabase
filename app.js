@@ -246,8 +246,7 @@
   const dom = {
     filterName: $('#filter-name'),
     filterWording: $('#filter-wording'),
-    filterPriceMin: $('#filter-price-min'),
-    filterPriceMax: $('#filter-price-max'),
+
     sortChips: $('#sort-chips'),
     sortFieldSelect: $('#sort-field-select'),
     sortAddBtn: $('#sort-add-btn'),
@@ -333,7 +332,7 @@
       'ms-craft', 'ms-entity-order', 'ms-companion-type', 'ms-lignumcolor', 'ms-essence',
       'ms-stamina', 'ms-mana', 'ms-lignum', 'ms-tag', 'ms-collection', 'ms-format', 'ms-specifier',
       'ms-equipment-slots', 'ms-memento-slots', 'ms-support-slots', 'ms-inventory-slots',
-      'ms-artist', 'ms-style', 'ms-summus',
+      'ms-artist', 'ms-style', 'ms-summus', 'ms-price',
     ];
     for (const id of ids) {
       const el = document.getElementById(id);
@@ -499,6 +498,12 @@
       { value: 'animated', label: 'Animated' },
     ]);
     ms['ms-summus']?.setOptions([...summusValues].sort().map((v) => ({ value: v, label: formatSummusLabel(v) })));
+
+    // Price – show display values sorted numerically
+    const priceOptions = Object.entries(PRICE_TO_VALUE)
+      .sort((a, b) => a[1] - b[1])
+      .map(([idx, display]) => ({ value: String(idx), label: display.toLocaleString('pt-BR') }));
+    ms['ms-price']?.setOptions(priceOptions);
   }
 
   function sortByOrder(arr, order) {
@@ -547,10 +552,9 @@
   function applyFilters() {
     const nameQuery = dom.filterName.value.trim().toLowerCase();
     const wordingQuery = dom.filterWording.value.trim().toLowerCase();
-    const priceMin = dom.filterPriceMin.value !== '' ? Number(dom.filterPriceMin.value) : null;
-    const priceMax = dom.filterPriceMax.value !== '' ? Number(dom.filterPriceMax.value) : null;
 
     const ms = state.multiSelects;
+    const priceVals = ms['ms-price']?.getValues() || [];
     const suitVals = ms['ms-suit']?.getValues() || [];
     const levelVals = ms['ms-level']?.getValues() || [];
     const rarityVals = ms['ms-rarity']?.getValues() || [];
@@ -759,12 +763,10 @@
         if (!summusVals.includes(card.Summus)) return false;
       }
 
-      // Price (compare against converted display value)
-      if (priceMin !== null || priceMax !== null) {
+      // Price
+      if (priceVals.length > 0) {
         if (card.Price == null) return false;
-        const displayPrice = getPriceValue(card.Price);
-        if (priceMin !== null && displayPrice < priceMin) return false;
-        if (priceMax !== null && displayPrice > priceMax) return false;
+        if (!priceVals.includes(String(card.Price))) return false;
       }
 
       // Coded
@@ -1454,8 +1456,7 @@
     };
     dom.filterName.addEventListener('input', debouncedFilter);
     dom.filterWording.addEventListener('input', debouncedFilter);
-    dom.filterPriceMin.addEventListener('input', debouncedFilter);
-    dom.filterPriceMax.addEventListener('input', debouncedFilter);
+
 
     // Toggle buttons (Coded / Reviewed)
     document.querySelectorAll('.toggle-btn').forEach((btn) => {
@@ -1519,8 +1520,7 @@
   function clearAllFilters() {
     dom.filterName.value = '';
     dom.filterWording.value = '';
-    dom.filterPriceMin.value = '';
-    dom.filterPriceMax.value = '';
+
 
     Object.values(state.multiSelects).forEach((ms) => ms.clear());
 

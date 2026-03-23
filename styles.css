@@ -525,51 +525,7 @@ body {
   color: var(--text-tertiary);
 }
 
-/* ── Filter Range (Price) ─────────────────── */
-.filter-range {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  width: 100%;
-}
-
-.filter-range input {
-  flex: 1;
-  min-width: 0;
-  height: 40px;
-  padding: 0 10px;
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: all var(--transition-fast);
-  -moz-appearance: textfield;
-}
-
-.filter-range input::-webkit-inner-spin-button,
-.filter-range input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.filter-range input:focus {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-glow);
-}
-
-.filter-range input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.range-separator {
-  color: var(--text-tertiary);
-  font-size: 0.75rem;
-  flex-shrink: 0;
-}
+/* (Price filter now uses standard multi-select) */
 
 /* ── Toggle Group (Coded/Reviewed) ────────── */
 .toggle-group {
