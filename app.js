@@ -40,6 +40,38 @@
     return PRICE_TO_VALUE[price] || 0;
   }
 
+  const SORT_FIELDS = [
+    { key: 'name', label: 'Alfabética', type: 'string', field: 'Name' },
+    { key: 'creationDate', label: 'Data de Criação', type: 'string', field: 'CreationDate' },
+    { key: 'modifiedDate', label: 'Data de Modificação', type: 'string', field: 'ModifiedDate' },
+    { key: 'suit', label: 'Naipe', type: 'order', field: 'Suit', order: SUIT_ORDER },
+    { key: 'level', label: 'Nível', type: 'number', field: 'Level' },
+    { key: 'rarity', label: 'Raridade', type: 'order', field: 'Rarity', order: RARITY_ORDER },
+    { key: 'knowledge', label: 'Conhecimento', type: 'string', field: 'Knowledge' },
+    { key: 'path', label: 'Caminho', type: 'string', field: 'Path' },
+    { key: 'craft', label: 'Craft', type: 'array', field: 'Crafts' },
+    { key: 'entityOrder', label: 'Ordem do Ente', type: 'string', field: 'Order' },
+    { key: 'companionType', label: 'Tipo Companion', type: 'string', field: 'CompanionType' },
+    { key: 'lignumColor', label: 'Cor de Essência', type: 'string', field: 'LignumColor' },
+    { key: 'essence', label: 'Essência', type: 'number', field: 'Essence' },
+    { key: 'stamina', label: 'Estamina', type: 'number', field: 'Stamina' },
+    { key: 'mana', label: 'Mana', type: 'number', field: 'Mana' },
+    { key: 'lignum', label: 'Lignum', type: 'string', field: 'Lignum' },
+    { key: 'tag', label: 'Tag', type: 'array', field: 'Tags' },
+    { key: 'collection', label: 'Coleção', type: 'string', field: 'Collection' },
+    { key: 'format', label: 'Formato', type: 'array', field: 'Formats' },
+    { key: 'specifier', label: 'Especificador', type: 'specifier' },
+    { key: 'equipmentSlots', label: 'Equipment Slots', type: 'slot', field: 'EquipmentSlots', bonus: 'EquipmentSlotsBonus' },
+    { key: 'mementoSlots', label: 'Memento Slots', type: 'slot', field: 'MementoSlots', bonus: 'MementoSlotsBonus' },
+    { key: 'supportSlots', label: 'Support Slots', type: 'slot', field: 'SupportSlots', bonus: 'SupportSlotsBonus' },
+    { key: 'inventorySlots', label: 'Inventory Slots', type: 'slot', field: 'InventorySlots', bonus: 'InventorySlotsBonus' },
+    { key: 'artist', label: 'Artista', type: 'string', field: 'Artist' },
+    { key: 'style', label: 'Estilo', type: 'string', field: 'Style' },
+    { key: 'summus', label: 'Summus', type: 'string', field: 'Summus' },
+    { key: 'price', label: 'Preço', type: 'price', field: 'Price' },
+    { key: 'score', label: 'Pontuação', type: 'number', field: 'Score' },
+  ];
+
   // ── Multi-Select Component ────────────────
   class MultiSelect {
     constructor(container, options = {}) {
@@ -201,7 +233,7 @@
     isLoading: false,
     hasSearched: false,
     dataReady: false,
-    sortDirection: 'asc',
+    sortCriteria: [{ key: 'name', direction: 'asc' }],
     multiSelects: {},
     toggleFilters: { coded: null, reviewed: null },
     filterLogic: { knowledge: 'or', craft: 'or', tag: 'or', format: 'or', specifier: 'or' },
@@ -216,8 +248,9 @@
     filterWording: $('#filter-wording'),
     filterPriceMin: $('#filter-price-min'),
     filterPriceMax: $('#filter-price-max'),
-    sortBy: $('#sort-by'),
-    sortDir: $('#sort-dir'),
+    sortChips: $('#sort-chips'),
+    sortFieldSelect: $('#sort-field-select'),
+    sortAddBtn: $('#sort-add-btn'),
     btnSearch: $('#btn-search'),
     btnClearFilters: $('#btn-clear-filters'),
     btnRetry: $('#btn-retry'),
@@ -747,38 +780,63 @@
       return true;
     });
 
-    results = sortCards(results, dom.sortBy.value, state.sortDirection);
+    results = sortCards(results);
     return results;
   }
 
-  function sortCards(cards, sortKey, direction) {
-    const copy = [...cards];
-    const dir = direction === 'desc' ? -1 : 1;
-    switch (sortKey) {
-      case 'name':
-        return copy.sort((a, b) => dir * (a.Name || '').localeCompare(b.Name || '', 'pt-BR'));
-      case 'rarity':
-        return copy.sort((a, b) => {
-          const ra = RARITY_ORDER.indexOf(a.Rarity);
-          const rb = RARITY_ORDER.indexOf(b.Rarity);
-          if (ra !== rb) return dir * (ra - rb);
-          return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
-        });
-      case 'suit':
-        return copy.sort((a, b) => {
-          const sa = SUIT_ORDER.indexOf(a.Suit);
-          const sb = SUIT_ORDER.indexOf(b.Suit);
-          if (sa !== sb) return dir * (sa - sb);
-          return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
-        });
-      case 'level':
-        return copy.sort((a, b) => {
-          if ((a.Level || 0) !== (b.Level || 0)) return dir * ((a.Level || 0) - (b.Level || 0));
-          return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
-        });
+  function compareField(a, b, fieldDef) {
+    switch (fieldDef.type) {
+      case 'string':
+        return (a[fieldDef.field] || '').localeCompare(b[fieldDef.field] || '', 'pt-BR');
+      case 'number':
+        return (a[fieldDef.field] || 0) - (b[fieldDef.field] || 0);
+      case 'order': {
+        const ia = fieldDef.order.indexOf(a[fieldDef.field]);
+        const ib = fieldDef.order.indexOf(b[fieldDef.field]);
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      }
+      case 'array': {
+        const arrA = (a[fieldDef.field] || []).join(', ');
+        const arrB = (b[fieldDef.field] || []).join(', ');
+        return arrA.localeCompare(arrB, 'pt-BR');
+      }
+      case 'price':
+        return getPriceValue(a[fieldDef.field]) - getPriceValue(b[fieldDef.field]);
+      case 'specifier': {
+        const getSpecs = (c) => {
+          const s = [];
+          if (c.Headpiece) s.push('Headpiece');
+          if (c.Vest) s.push('Vest');
+          if (c.Feet) s.push('Feet');
+          if (c.Accessory) s.push('Accessory');
+          if (c.Utility) s.push('Utility');
+          return s.join(', ');
+        };
+        return getSpecs(a).localeCompare(getSpecs(b), 'pt-BR');
+      }
+      case 'slot': {
+        const va = a[fieldDef.field] ?? a[fieldDef.bonus] ?? -1;
+        const vb = b[fieldDef.field] ?? b[fieldDef.bonus] ?? -1;
+        return va - vb;
+      }
       default:
-        return copy;
+        return 0;
     }
+  }
+
+  function sortCards(cards) {
+    if (state.sortCriteria.length === 0) return cards;
+    const copy = [...cards];
+    return copy.sort((a, b) => {
+      for (const criterion of state.sortCriteria) {
+        const fieldDef = SORT_FIELDS.find(f => f.key === criterion.key);
+        if (!fieldDef) continue;
+        const dir = criterion.direction === 'desc' ? -1 : 1;
+        const result = compareField(a, b, fieldDef);
+        if (result !== 0) return dir * result;
+      }
+      return 0;
+    });
   }
 
   // ── Card Renderers ────────────────────────
@@ -1361,16 +1419,29 @@
     // Retry button
     dom.btnRetry.addEventListener('click', performSearch);
 
-    // Live filter on sort change
-    dom.sortBy.addEventListener('change', () => {
+    // Sort builder
+    dom.sortAddBtn.addEventListener('click', () => {
+      const key = dom.sortFieldSelect.value;
+      if (!key) return;
+      state.sortCriteria.push({ key, direction: 'asc' });
+      renderSortChips();
       if (state.hasSearched) liveFilter();
     });
 
-    // Sort direction toggle
-    dom.sortDir.addEventListener('click', () => {
-      state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
-      dom.sortDir.classList.toggle('sort-desc', state.sortDirection === 'desc');
-      if (state.hasSearched) liveFilter();
+    dom.sortChips.addEventListener('click', (e) => {
+      const dirBtn = e.target.closest('.sort-chip-dir');
+      const removeBtn = e.target.closest('.sort-chip-remove');
+      if (dirBtn) {
+        const idx = Number(dirBtn.dataset.index);
+        state.sortCriteria[idx].direction = state.sortCriteria[idx].direction === 'asc' ? 'desc' : 'asc';
+        renderSortChips();
+        if (state.hasSearched) liveFilter();
+      } else if (removeBtn) {
+        const idx = Number(removeBtn.dataset.index);
+        state.sortCriteria.splice(idx, 1);
+        renderSortChips();
+        if (state.hasSearched) liveFilter();
+      }
     });
 
     // Live filter on text input (debounced)
@@ -1464,7 +1535,50 @@
       btn.classList.remove('logic-and');
     });
 
+    // Reset sort criteria
+    state.sortCriteria = [{ key: 'name', direction: 'asc' }];
+    renderSortChips();
+
     if (state.hasSearched) liveFilter();
+  }
+
+  // ── Sort Builder UI ────────────────────────
+  function renderSortChips() {
+    const container = dom.sortChips;
+    container.innerHTML = '';
+    state.sortCriteria.forEach((criterion, index) => {
+      const fieldDef = SORT_FIELDS.find(f => f.key === criterion.key);
+      if (!fieldDef) return;
+      const chip = document.createElement('span');
+      chip.className = 'sort-chip';
+      const ascSvg = '<path d="M8 3l4 5H4z"/><path d="M8 13l-4-5h8z" opacity="0.35"/>';
+      const descSvg = '<path d="M8 3l4 5H4z" opacity="0.35"/><path d="M8 13l-4-5h8z"/>';
+      chip.innerHTML =
+        '<span class="sort-chip-index">' + (index + 1) + '</span>' +
+        '<span class="sort-chip-label">' + fieldDef.label + '</span>' +
+        '<button class="sort-chip-dir" data-index="' + index + '" title="Alternar ASC/DESC">' +
+          '<svg viewBox="0 0 16 16" fill="currentColor" width="10" height="10">' +
+            (criterion.direction === 'asc' ? ascSvg : descSvg) +
+          '</svg>' +
+        '</button>' +
+        '<button class="sort-chip-remove" data-index="' + index + '" title="Remover">&times;</button>';
+      container.appendChild(chip);
+    });
+    updateSortFieldSelect();
+  }
+
+  function updateSortFieldSelect() {
+    const usedKeys = new Set(state.sortCriteria.map(c => c.key));
+    const select = dom.sortFieldSelect;
+    select.innerHTML = '';
+    SORT_FIELDS.forEach(f => {
+      if (usedKeys.has(f.key)) return;
+      const opt = document.createElement('option');
+      opt.value = f.key;
+      opt.textContent = f.label;
+      select.appendChild(opt);
+    });
+    dom.sortAddBtn.disabled = select.options.length === 0;
   }
 
   // ── Init ──────────────────────────────────
@@ -1472,6 +1586,7 @@
     initTheme();
     initMultiSelects();
     bindEvents();
+    renderSortChips();
     setupScrollObserver();
     preloadData();
     handleDeepLink();

@@ -663,17 +663,72 @@ body {
   letter-spacing: 0.05em;
 }
 
-.sort-controls {
+.sort-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sort-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px 4px 10px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sort-chip-index {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-right: 2px;
+}
+
+.sort-chip-dir,
+.sort-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: background var(--transition-fast);
+}
+
+.sort-chip-dir:hover,
+.sort-chip-remove:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.sort-add-row {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
-.sort-group select {
-  height: 40px;
-  padding: 0 32px 0 12px;
+.sort-add-row select {
+  height: 32px;
+  padding: 0 28px 0 8px;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-primary);
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -684,17 +739,18 @@ body {
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
+  background-position: right 8px center;
+  min-width: 120px;
 }
 
-.sort-group select:focus {
+.sort-add-row select:focus {
   border-color: var(--accent);
   box-shadow: var(--shadow-glow);
 }
 
-.sort-dir-btn {
-  width: 40px;
-  height: 40px;
+.sort-add-btn {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -707,13 +763,14 @@ body {
   flex-shrink: 0;
 }
 
-.sort-dir-btn:hover {
-  border-color: var(--text-tertiary);
-  color: var(--text-secondary);
+.sort-add-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.sort-dir-btn.sort-desc svg {
-  transform: rotate(180deg);
+.sort-add-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .view-toggles {
@@ -1489,8 +1546,8 @@ body {
   .filter-actions .sort-group {
     width: 100%;
   }
-  .filter-actions .sort-group select {
-    width: 100%;
+  .filter-actions .sort-group .sort-add-row select {
+    flex: 1;
   }
   .filter-actions .view-toggles {
     align-self: center;

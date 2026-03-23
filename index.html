@@ -256,20 +256,17 @@
             Limpar filtros
           </button>
           <div class="sort-group">
-            <label for="sort-by">Ordenar</label>
-            <div class="sort-controls">
-              <select id="sort-by">
-                <option value="name">Alfabética</option>
-                <option value="rarity">Raridade</option>
-                <option value="suit">Naipe</option>
-                <option value="level">Nível</option>
-              </select>
-              <button id="sort-dir" class="sort-dir-btn" title="Alternar crescente/decrescente">
-                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
-                  <path d="M8 3l4 5H4z"/>
-                  <path d="M8 13l-4-5h8z" opacity="0.35"/>
-                </svg>
-              </button>
+            <label>Ordenar</label>
+            <div class="sort-builder">
+              <div class="sort-chips" id="sort-chips"></div>
+              <div class="sort-add-row">
+                <select id="sort-field-select"></select>
+                <button id="sort-add-btn" class="sort-add-btn" title="Adicionar critério de ordenação">
+                  <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                    <path d="M8 2a1 1 0 011 1v4h4a1 1 0 110 2H9v4a1 1 0 11-2 0V9H3a1 1 0 110-2h4V3a1 1 0 011-1z"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
           <div class="view-toggles">
