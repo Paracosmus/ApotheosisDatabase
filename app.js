@@ -796,11 +796,81 @@
     handleDeepLink();
   }
 
-  // Run
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  // ── Auth Gate ──────────────────────────────
+  const AUTH_HASH = '674e7be7af2d59b285f39a78c231b2c1b79ca21b9f26c3699d2520c6c3f55b50';
+  const AUTH_KEY = 'apotheosis-auth';
+
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function unlockApp() {
+    const gate = document.getElementById('auth-gate');
+    const wrapper = document.getElementById('app-wrapper');
+
+    // Fade out gate
+    gate.classList.add('auth-gate-hidden');
+
+    // Show app
+    wrapper.classList.remove('hidden');
+
+    // Remove gate from DOM after animation
+    setTimeout(() => {
+      gate.remove();
+    }, 600);
+
+    // Now start the app
     init();
+  }
+
+  function setupAuthGate() {
+    // Check if already authenticated
+    if (localStorage.getItem(AUTH_KEY) === 'granted') {
+      unlockApp();
+      return;
+    }
+
+    const form = document.getElementById('auth-form');
+    const input = document.getElementById('auth-password');
+    const errorMsg = document.getElementById('auth-error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const password = input.value;
+      if (!password) return;
+
+      const hash = await sha256(password);
+
+      if (hash === AUTH_HASH) {
+        // Save auth to localStorage
+        localStorage.setItem(AUTH_KEY, 'granted');
+        input.classList.remove('auth-input-error');
+        errorMsg.classList.add('hidden');
+        unlockApp();
+      } else {
+        // Show error
+        input.classList.add('auth-input-error');
+        errorMsg.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+
+        // Remove shake animation class after it plays
+        setTimeout(() => {
+          input.classList.remove('auth-input-error');
+        }, 400);
+      }
+    });
+  }
+
+  // Run auth gate
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAuthGate);
+  } else {
+    setupAuthGate();
   }
 
 })();
