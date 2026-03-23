@@ -210,7 +210,6 @@ body {
   max-width: 1440px;
   margin: 0 auto;
   padding: 20px 20px 0;
-  overflow-x: hidden;
 }
 
 .filter-row {
@@ -254,7 +253,6 @@ body {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  overflow: hidden;
 }
 
 .filter-group label {

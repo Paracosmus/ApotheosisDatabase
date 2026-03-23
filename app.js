@@ -294,8 +294,8 @@
   function initMultiSelects() {
     const ids = [
       'ms-suit', 'ms-level', 'ms-rarity', 'ms-knowledge', 'ms-path',
-      'ms-craft', 'ms-entity-order', 'ms-companion-type', 'ms-essence',
-      'ms-lignum', 'ms-tag', 'ms-collection', 'ms-specifier',
+      'ms-craft', 'ms-entity-order', 'ms-companion-type', 'ms-lignumcolor', 'ms-essence',
+      'ms-stamina', 'ms-mana', 'ms-lignum', 'ms-tag', 'ms-collection', 'ms-format', 'ms-specifier',
       'ms-equipment-slots', 'ms-memento-slots', 'ms-support-slots', 'ms-inventory-slots',
       'ms-artist', 'ms-style', 'ms-summus',
     ];
@@ -320,10 +320,14 @@
     const entityOrders = new Set();
     const specifiers = new Set();
     const companionTypes = new Set();
+    const lignumColors = new Set();
     const essences = new Set();
+    const staminas = new Set();
+    const manas = new Set();
     const lignums = new Set();
     const tags = new Set();
     const collections = new Set();
+    const formats = new Set();
     const equipmentSlots = new Set();
     const mementoSlots = new Set();
     const supportSlots = new Set();
@@ -393,8 +397,15 @@
       // CompanionType
       if (card.CompanionType) companionTypes.add(card.CompanionType);
 
+      // LignumColor
+      if (card.LignumColor) lignumColors.add(card.LignumColor);
+
       // Essence (numeric values)
       if (card.Essence != null) essences.add(String(card.Essence));
+
+      // Stamina & Mana
+      if (card.Stamina != null) staminas.add(String(card.Stamina));
+      if (card.Mana != null) manas.add(String(card.Mana));
 
       // Lignum (Skill cards only)
       if (card.Suit === 'Skill' && card.Lignum) lignums.add(card.Lignum);
@@ -404,6 +415,9 @@
 
       // Collection
       if (card.Collection) collections.add(card.Collection);
+
+      // Formats
+      if (card.Formats) card.Formats.forEach((f) => formats.add(f));
 
       // Slots (combine base and bonus variants)
       const eqSlot = card.EquipmentSlots ?? card.EquipmentSlotsBonus;
@@ -429,10 +443,14 @@
     ms['ms-craft']?.setOptions([...crafts].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-entity-order']?.setOptions([...entityOrders].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-companion-type']?.setOptions([...companionTypes].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-lignumcolor']?.setOptions([...lignumColors].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-essence']?.setOptions([...essences].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-stamina']?.setOptions([...staminas].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-mana']?.setOptions([...manas].sort((a, b) => Number(a) - Number(b)));
     ms['ms-lignum']?.setOptions([...lignums].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-tag']?.setOptions([...tags].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-collection']?.setOptions([...collections].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-format']?.setOptions([...formats].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-specifier']?.setOptions([...specifiers].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-equipment-slots']?.setOptions([...equipmentSlots].sort((a, b) => Number(a) - Number(b)));
     ms['ms-memento-slots']?.setOptions([...mementoSlots].sort((a, b) => Number(a) - Number(b)));
@@ -481,6 +499,12 @@
       });
     }
     if (card.FlavorText) text += ' ' + card.FlavorText;
+    if (card.SummusData) {
+      const sd = card.SummusData;
+      if (sd.text) text += ' ' + sd.text;
+      if (sd.Text) text += ' ' + sd.Text;
+      if (sd.condition) text += ' ' + sd.condition;
+    }
     return text.toLowerCase();
   }
 
@@ -499,10 +523,14 @@
     const craftVals = ms['ms-craft']?.getValues() || [];
     const entityOrderVals = ms['ms-entity-order']?.getValues() || [];
     const companionTypeVals = ms['ms-companion-type']?.getValues() || [];
+    const lignumColorVals = ms['ms-lignumcolor']?.getValues() || [];
     const essenceVals = ms['ms-essence']?.getValues() || [];
+    const staminaVals = ms['ms-stamina']?.getValues() || [];
+    const manaVals = ms['ms-mana']?.getValues() || [];
     const lignumVals = ms['ms-lignum']?.getValues() || [];
     const tagVals = ms['ms-tag']?.getValues() || [];
     const collectionVals = ms['ms-collection']?.getValues() || [];
+    const formatVals = ms['ms-format']?.getValues() || [];
     const specifierVals = ms['ms-specifier']?.getValues() || [];
     const equipmentSlotsVals = ms['ms-equipment-slots']?.getValues() || [];
     const mementoSlotsVals = ms['ms-memento-slots']?.getValues() || [];
@@ -609,10 +637,27 @@
         if (!companionTypeVals.includes(card.CompanionType)) return false;
       }
 
+      // LignumColor
+      if (lignumColorVals.length > 0) {
+        if (!card.LignumColor || !lignumColorVals.includes(card.LignumColor)) return false;
+      }
+
       // Essence
       if (essenceVals.length > 0) {
         if (card.Essence == null) return false;
         if (!essenceVals.includes(String(card.Essence))) return false;
+      }
+
+      // Stamina
+      if (staminaVals.length > 0) {
+        if (card.Stamina == null) return false;
+        if (!staminaVals.includes(String(card.Stamina))) return false;
+      }
+
+      // Mana
+      if (manaVals.length > 0) {
+        if (card.Mana == null) return false;
+        if (!manaVals.includes(String(card.Mana))) return false;
       }
 
       // Lignum
@@ -629,6 +674,11 @@
       // Collection
       if (collectionVals.length > 0) {
         if (!card.Collection || !collectionVals.includes(card.Collection)) return false;
+      }
+
+      // Formats
+      if (formatVals.length > 0) {
+        if (!card.Formats || !formatVals.some((v) => card.Formats.includes(v))) return false;
       }
 
       // Artist
