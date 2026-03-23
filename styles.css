@@ -532,7 +532,7 @@ body {
 .card-medium-img-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 7 / 12;
   background: var(--bg-tertiary);
   overflow: hidden;
 }
@@ -601,7 +601,7 @@ body {
   border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 7 / 12;
   background: var(--bg-tertiary);
   transition: all var(--transition-base);
 }
@@ -678,7 +678,7 @@ body {
 }
 
 .skeleton-medium-img {
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 7 / 12;
 }
 
 .skeleton-medium-text {
@@ -697,7 +697,7 @@ body {
 }
 
 .skeleton-large {
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 7 / 12;
   border-radius: var(--radius-lg);
 }
 

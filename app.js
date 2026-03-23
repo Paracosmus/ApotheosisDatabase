@@ -38,6 +38,7 @@
     viewMode: 'compact',   // compact | medium | large
     isLoading: false,
     hasSearched: false,
+    dataReady: false,
   };
 
   // ── DOM References ────────────────────────
@@ -85,8 +86,13 @@
   // ── Theme Manager ─────────────────────────
   function initTheme() {
     const stored = localStorage.getItem('apotheosis-theme');
-    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Default to dark mode on first access; respect stored preference afterwards
+    if (stored === 'dark' || !stored) {
       document.documentElement.classList.add('dark');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0a0a');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fafafa');
     }
 
     dom.themeToggle.addEventListener('click', () => {
@@ -394,18 +400,32 @@
     dom.resultsCount.textContent = '';
   }
 
+  // ── Preload Data on Init ──────────────────
+  async function preloadData() {
+    try {
+      state.allCards = await fetchCards();
+      populateFilters(state.allCards);
+      state.dataReady = true;
+      console.log('[App] Data preloaded:', state.allCards.length, 'cards');
+    } catch (err) {
+      console.error('[App] Preload failed:', err);
+      // Filters will stay empty; user can retry via Buscar
+    }
+  }
+
   // ── Search Action ─────────────────────────
   async function performSearch() {
     if (state.isLoading) return;
 
-    // If data not yet loaded, fetch it
-    if (state.allCards.length === 0) {
+    // If data not yet loaded (preload failed), try fetching now
+    if (!state.dataReady) {
       state.isLoading = true;
       showSkeletons();
 
       try {
         state.allCards = await fetchCards();
         populateFilters(state.allCards);
+        state.dataReady = true;
       } catch (err) {
         console.error('[App] Fetch failed:', err);
         showError('Falha ao carregar dados: ' + err.message);
@@ -772,6 +792,7 @@
     initTheme();
     bindEvents();
     setupScrollObserver();
+    preloadData();
     handleDeepLink();
   }
 
