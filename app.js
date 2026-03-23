@@ -30,6 +30,16 @@
   const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
   const SUIT_ORDER = ['House', 'Class', 'Entity', 'Item', 'Skill', 'Companion', 'Event', 'Summus'];
 
+  const PRICE_TO_VALUE = {
+    1: 1, 2: 5, 3: 10, 4: 20, 5: 25, 6: 50, 7: 75, 8: 100,
+    9: 150, 10: 200, 11: 250, 12: 500, 13: 750, 14: 1000,
+    15: 2500, 16: 5000, 17: 10000, 18: 25000, 19: 50000, 20: 100000,
+  };
+
+  function getPriceValue(price) {
+    return PRICE_TO_VALUE[price] || 0;
+  }
+
   // ── Multi-Select Component ────────────────
   class MultiSelect {
     constructor(container, options = {}) {
@@ -284,8 +294,10 @@
   function initMultiSelects() {
     const ids = [
       'ms-suit', 'ms-level', 'ms-rarity', 'ms-knowledge', 'ms-path',
-      'ms-craft', 'ms-specifier', 'ms-companion-type', 'ms-essence',
-      'ms-lignum', 'ms-tag', 'ms-collection', 'ms-artist', 'ms-style', 'ms-summus',
+      'ms-craft', 'ms-entity-order', 'ms-companion-type', 'ms-essence',
+      'ms-lignum', 'ms-tag', 'ms-collection', 'ms-specifier',
+      'ms-equipment-slots', 'ms-memento-slots', 'ms-support-slots', 'ms-inventory-slots',
+      'ms-artist', 'ms-style', 'ms-summus',
     ];
     for (const id of ids) {
       const el = document.getElementById(id);
@@ -305,14 +317,19 @@
     const knowledges = new Set();
     const paths = new Set();
     const crafts = new Set();
+    const entityOrders = new Set();
     const specifiers = new Set();
     const companionTypes = new Set();
     const essences = new Set();
     const lignums = new Set();
     const tags = new Set();
     const collections = new Set();
+    const equipmentSlots = new Set();
+    const mementoSlots = new Set();
+    const supportSlots = new Set();
+    const inventorySlots = new Set();
     const artists = new Set();
-    const summusKnowledges = new Set();
+    const summusValues = new Set();
 
     cards.forEach((card) => {
       if (card.Suit) suits.add(card.Suit);
@@ -349,12 +366,27 @@
         }
       }
 
-      // Specifiers (Order field on Entity)
-      if (card.Suit === 'Entity') {
-        if (card.Order) {
-          specifiers.add(card.Order);
+      // Specifiers (Item cards)
+      if (card.Suit === 'Item') {
+        const specs = [];
+        if (card.Headpiece) specs.push('Headpiece');
+        if (card.Vest) specs.push('Vest');
+        if (card.Feet) specs.push('Feet');
+        if (card.Accessory) specs.push('Accessory');
+        if (card.Utility) specs.push('Utility');
+        if (specs.length > 0) {
+          specs.forEach((s) => specifiers.add(s));
         } else {
           specifiers.add('(Sem Especificador)');
+        }
+      }
+
+      // Entity Order
+      if (card.Suit === 'Entity') {
+        if (card.Order) {
+          entityOrders.add(card.Order);
+        } else {
+          entityOrders.add('(Sem Ordem)');
         }
       }
 
@@ -364,19 +396,27 @@
       // Essence (numeric values)
       if (card.Essence != null) essences.add(String(card.Essence));
 
-      // Lignum
-      if (card.Lignum) lignums.add(card.Lignum);
+      // Lignum (Skill cards only)
+      if (card.Suit === 'Skill' && card.Lignum) lignums.add(card.Lignum);
 
       // Tags
       if (card.Tags) card.Tags.forEach((t) => tags.add(t));
 
-      // Collections (Formats)
-      if (card.Formats) card.Formats.forEach((f) => collections.add(f));
+      // Collection
+      if (card.Collection) collections.add(card.Collection);
 
-      // Summus (Knowledge1/2/3 on Class cards)
-      if (card.Knowledge1) summusKnowledges.add(card.Knowledge1);
-      if (card.Knowledge2) summusKnowledges.add(card.Knowledge2);
-      if (card.Knowledge3) summusKnowledges.add(card.Knowledge3);
+      // Slots (combine base and bonus variants)
+      const eqSlot = card.EquipmentSlots ?? card.EquipmentSlotsBonus;
+      if (eqSlot != null) equipmentSlots.add(String(eqSlot));
+      const memSlot = card.MementoSlots ?? card.MementoSlotsBonus;
+      if (memSlot != null) mementoSlots.add(String(memSlot));
+      const supSlot = card.SupportSlots ?? card.SupportSlotsBonus;
+      if (supSlot != null) supportSlots.add(String(supSlot));
+      const invSlot = card.InventorySlots ?? card.InventorySlotsBonus;
+      if (invSlot != null) inventorySlots.add(String(invSlot));
+
+      // Summus
+      if (card.Summus) summusValues.add(card.Summus);
     });
 
     const ms = state.multiSelects;
@@ -387,19 +427,24 @@
     ms['ms-knowledge']?.setOptions([...knowledges].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-path']?.setOptions([...paths].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-craft']?.setOptions([...crafts].sort((a, b) => a.localeCompare(b, 'pt-BR')));
-    ms['ms-specifier']?.setOptions([...specifiers].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-entity-order']?.setOptions([...entityOrders].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-companion-type']?.setOptions([...companionTypes].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-essence']?.setOptions([...essences].sort((a, b) => Number(a) - Number(b)));
     ms['ms-lignum']?.setOptions([...lignums].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-tag']?.setOptions([...tags].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-collection']?.setOptions([...collections].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-specifier']?.setOptions([...specifiers].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-equipment-slots']?.setOptions([...equipmentSlots].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-memento-slots']?.setOptions([...mementoSlots].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-support-slots']?.setOptions([...supportSlots].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-inventory-slots']?.setOptions([...inventorySlots].sort((a, b) => Number(a) - Number(b)));
     ms['ms-artist']?.setOptions([...artists].sort((a, b) => a.localeCompare(b, 'pt-BR')));
     ms['ms-style']?.setOptions([
       { value: 'normal', label: 'Normal' },
       { value: 'full-art', label: 'Full-Art' },
       { value: 'animated', label: 'Animated' },
     ]);
-    ms['ms-summus']?.setOptions([...summusKnowledges].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-summus']?.setOptions([...summusValues].sort().map((v) => ({ value: v, label: formatSummusLabel(v) })));
   }
 
   function sortByOrder(arr, order) {
@@ -411,6 +456,11 @@
       if (ib === -1) return -1;
       return ia - ib;
     });
+  }
+
+  function formatSummusLabel(value) {
+    if (!value) return '';
+    return value.replace(/^Summus/, '').replace(/_C$/, '');
   }
 
   // ── Filtering & Sorting ───────────────────
@@ -447,12 +497,17 @@
     const knowledgeVals = ms['ms-knowledge']?.getValues() || [];
     const pathVals = ms['ms-path']?.getValues() || [];
     const craftVals = ms['ms-craft']?.getValues() || [];
-    const specifierVals = ms['ms-specifier']?.getValues() || [];
+    const entityOrderVals = ms['ms-entity-order']?.getValues() || [];
     const companionTypeVals = ms['ms-companion-type']?.getValues() || [];
     const essenceVals = ms['ms-essence']?.getValues() || [];
     const lignumVals = ms['ms-lignum']?.getValues() || [];
     const tagVals = ms['ms-tag']?.getValues() || [];
     const collectionVals = ms['ms-collection']?.getValues() || [];
+    const specifierVals = ms['ms-specifier']?.getValues() || [];
+    const equipmentSlotsVals = ms['ms-equipment-slots']?.getValues() || [];
+    const mementoSlotsVals = ms['ms-memento-slots']?.getValues() || [];
+    const supportSlotsVals = ms['ms-support-slots']?.getValues() || [];
+    const inventorySlotsVals = ms['ms-inventory-slots']?.getValues() || [];
     const artistVals = ms['ms-artist']?.getValues() || [];
     const styleVals = ms['ms-style']?.getValues() || [];
     const summusVals = ms['ms-summus']?.getValues() || [];
@@ -501,11 +556,52 @@
         if (!craftVals.some((v) => cardCrafts.includes(v))) return false;
       }
 
-      // Specifier (Order)
+      // Specifier
       if (specifierVals.length > 0) {
+        if (card.Suit !== 'Item') return false;
+        const cardSpecs = [];
+        if (card.Headpiece) cardSpecs.push('Headpiece');
+        if (card.Vest) cardSpecs.push('Vest');
+        if (card.Feet) cardSpecs.push('Feet');
+        if (card.Accessory) cardSpecs.push('Accessory');
+        if (card.Utility) cardSpecs.push('Utility');
+        if (cardSpecs.length === 0) cardSpecs.push('(Sem Especificador)');
+        if (!specifierVals.some((v) => cardSpecs.includes(v))) return false;
+      }
+
+      // Entity Order
+      if (entityOrderVals.length > 0) {
         if (card.Suit !== 'Entity') return false;
-        const cardSpec = card.Order || '(Sem Especificador)';
-        if (!specifierVals.includes(cardSpec)) return false;
+        const cardOrder = card.Order || '(Sem Ordem)';
+        if (!entityOrderVals.includes(cardOrder)) return false;
+      }
+
+      // Equipment Slots
+      if (equipmentSlotsVals.length > 0) {
+        const v = card.EquipmentSlots ?? card.EquipmentSlotsBonus;
+        if (v == null) return false;
+        if (!equipmentSlotsVals.includes(String(v))) return false;
+      }
+
+      // Memento Slots
+      if (mementoSlotsVals.length > 0) {
+        const v = card.MementoSlots ?? card.MementoSlotsBonus;
+        if (v == null) return false;
+        if (!mementoSlotsVals.includes(String(v))) return false;
+      }
+
+      // Support Slots
+      if (supportSlotsVals.length > 0) {
+        const v = card.SupportSlots ?? card.SupportSlotsBonus;
+        if (v == null) return false;
+        if (!supportSlotsVals.includes(String(v))) return false;
+      }
+
+      // Inventory Slots
+      if (inventorySlotsVals.length > 0) {
+        const v = card.InventorySlots ?? card.InventorySlotsBonus;
+        if (v == null) return false;
+        if (!inventorySlotsVals.includes(String(v))) return false;
       }
 
       // CompanionType
@@ -521,6 +617,7 @@
 
       // Lignum
       if (lignumVals.length > 0) {
+        if (card.Suit !== 'Skill' || !card.Lignum) return false;
         if (!lignumVals.includes(card.Lignum)) return false;
       }
 
@@ -529,9 +626,9 @@
         if (!card.Tags || !tagVals.some((v) => card.Tags.includes(v))) return false;
       }
 
-      // Collection (Formats)
+      // Collection
       if (collectionVals.length > 0) {
-        if (!card.Formats || !collectionVals.some((v) => card.Formats.includes(v))) return false;
+        if (!card.Collection || !collectionVals.includes(card.Collection)) return false;
       }
 
       // Artist
@@ -539,29 +636,28 @@
         if (!artistVals.includes((card.Artist || '').trim())) return false;
       }
 
-      // Style
+      // Style (Normal / Full-Art / Animated)
       if (styleVals.length > 0) {
         const cardStyles = [];
         if (card.FullArt) cardStyles.push('full-art');
-        if (card.Tokenable) cardStyles.push('animated');
-        if (!card.FullArt && !card.Tokenable) cardStyles.push('normal');
-        if (card.FullArt === false && !card.Tokenable) cardStyles.push('normal');
+        if (card.Media) cardStyles.push('animated');
+        if (!card.FullArt && !card.Media) cardStyles.push('normal');
         if (!styleVals.some((v) => cardStyles.includes(v))) return false;
       }
 
-      // Summus (Knowledge1/2/3)
+      // Summus
       if (summusVals.length > 0) {
-        const cardSummus = new Set();
-        if (card.Knowledge1) cardSummus.add(card.Knowledge1);
-        if (card.Knowledge2) cardSummus.add(card.Knowledge2);
-        if (card.Knowledge3) cardSummus.add(card.Knowledge3);
-        if (cardSummus.size === 0) return false;
-        if (!summusVals.some((v) => cardSummus.has(v))) return false;
+        if (!card.Summus) return false;
+        if (!summusVals.includes(card.Summus)) return false;
       }
 
-      // Price
-      if (priceMin !== null && (card.Price == null || card.Price < priceMin)) return false;
-      if (priceMax !== null && (card.Price == null || card.Price > priceMax)) return false;
+      // Price (compare against converted display value)
+      if (priceMin !== null || priceMax !== null) {
+        if (card.Price == null) return false;
+        const displayPrice = getPriceValue(card.Price);
+        if (priceMin !== null && displayPrice < priceMin) return false;
+        if (priceMax !== null && displayPrice > priceMax) return false;
+      }
 
       // Coded
       if (codedFilter !== null) {
@@ -1020,6 +1116,39 @@
         <div class="modal-section-title">Texto de Ambientação</div>
         <div class="modal-flavor">${esc(card.FlavorText)}</div>
       </div>`;
+    }
+
+    // Summus & SummusData
+    if (card.Summus) {
+      html += `<div class="modal-section">
+        <div class="modal-section-title">Summus</div>
+        <p style="color:var(--text-secondary);font-weight:500">${esc(formatSummusLabel(card.Summus))}</p>
+      </div>`;
+
+      const sd = card.SummusData;
+      if (sd && Object.keys(sd).length > 0) {
+        const dataEntries = [];
+        if (sd.timer != null) dataEntries.push(['Timer', sd.timer]);
+        if (sd.hp != null) dataEntries.push(['HP', sd.hp]);
+        if (sd.area != null) dataEntries.push(['Área', sd.area]);
+        if (sd.condition) dataEntries.push(['Condição', formatEffectText(sd.condition)]);
+        const sdText = sd.text || sd.Text;
+        if (sdText) dataEntries.push(['Texto', formatEffectText(sdText)]);
+
+        if (dataEntries.length > 0) {
+          html += `<div class="modal-section">
+            <div class="modal-section-title">Summus Data</div>
+            <div class="modal-summus-data">
+              ${dataEntries.map(([label, val]) => `
+                <div class="modal-summus-entry">
+                  <span class="modal-summus-label">${label}:</span>
+                  <span class="modal-summus-value">${val}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+        }
+      }
     }
 
     // Artist

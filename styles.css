@@ -105,6 +105,7 @@ html {
   color: var(--text-primary);
   background: var(--bg-primary);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -209,6 +210,7 @@ body {
   max-width: 1440px;
   margin: 0 auto;
   padding: 20px 20px 0;
+  overflow-x: hidden;
 }
 
 .filter-row {
@@ -223,7 +225,13 @@ body {
 }
 
 .filter-row-multi {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .filter-row-multi {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 640px) {
@@ -245,6 +253,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .filter-group label {
@@ -488,6 +498,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  width: 100%;
 }
 
 .filter-range input {
@@ -536,6 +548,8 @@ body {
   padding: 3px;
   height: 40px;
   align-items: center;
+  min-width: 0;
+  width: 100%;
 }
 
 .toggle-btn {
@@ -1232,6 +1246,28 @@ body {
   padding: 12px;
   border-left: 2px solid var(--border-color);
   line-height: 1.6;
+}
+
+/* Summus Data */
+.modal-summus-data {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-summus-entry {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.modal-summus-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.modal-summus-value {
+  color: var(--text-primary);
 }
 
 /* Share button */
