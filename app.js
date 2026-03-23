@@ -201,6 +201,7 @@
     isLoading: false,
     hasSearched: false,
     dataReady: false,
+    sortDirection: 'asc',
     multiSelects: {},
     toggleFilters: { coded: null, reviewed: null },
     filterLogic: { knowledge: 'or', craft: 'or', tag: 'or', format: 'or', specifier: 'or' },
@@ -216,6 +217,7 @@
     filterPriceMin: $('#filter-price-min'),
     filterPriceMax: $('#filter-price-max'),
     sortBy: $('#sort-by'),
+    sortDir: $('#sort-dir'),
     btnSearch: $('#btn-search'),
     btnClearFilters: $('#btn-clear-filters'),
     btnRetry: $('#btn-retry'),
@@ -745,32 +747,33 @@
       return true;
     });
 
-    results = sortCards(results, dom.sortBy.value);
+    results = sortCards(results, dom.sortBy.value, state.sortDirection);
     return results;
   }
 
-  function sortCards(cards, sortKey) {
+  function sortCards(cards, sortKey, direction) {
     const copy = [...cards];
+    const dir = direction === 'desc' ? -1 : 1;
     switch (sortKey) {
       case 'name':
-        return copy.sort((a, b) => (a.Name || '').localeCompare(b.Name || '', 'pt-BR'));
+        return copy.sort((a, b) => dir * (a.Name || '').localeCompare(b.Name || '', 'pt-BR'));
       case 'rarity':
         return copy.sort((a, b) => {
           const ra = RARITY_ORDER.indexOf(a.Rarity);
           const rb = RARITY_ORDER.indexOf(b.Rarity);
-          if (ra !== rb) return ra - rb;
+          if (ra !== rb) return dir * (ra - rb);
           return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
         });
       case 'suit':
         return copy.sort((a, b) => {
           const sa = SUIT_ORDER.indexOf(a.Suit);
           const sb = SUIT_ORDER.indexOf(b.Suit);
-          if (sa !== sb) return sa - sb;
+          if (sa !== sb) return dir * (sa - sb);
           return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
         });
       case 'level':
         return copy.sort((a, b) => {
-          if ((a.Level || 0) !== (b.Level || 0)) return (a.Level || 0) - (b.Level || 0);
+          if ((a.Level || 0) !== (b.Level || 0)) return dir * ((a.Level || 0) - (b.Level || 0));
           return (a.Name || '').localeCompare(b.Name || '', 'pt-BR');
         });
       default:
@@ -1360,6 +1363,13 @@
 
     // Live filter on sort change
     dom.sortBy.addEventListener('change', () => {
+      if (state.hasSearched) liveFilter();
+    });
+
+    // Sort direction toggle
+    dom.sortDir.addEventListener('click', () => {
+      state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+      dom.sortDir.classList.toggle('sort-desc', state.sortDirection === 'desc');
       if (state.hasSearched) liveFilter();
     });
 

@@ -257,12 +257,20 @@
           </button>
           <div class="sort-group">
             <label for="sort-by">Ordenar</label>
-            <select id="sort-by">
-              <option value="name">Alfabética</option>
-              <option value="rarity">Raridade</option>
-              <option value="suit">Naipe</option>
-              <option value="level">Nível</option>
-            </select>
+            <div class="sort-controls">
+              <select id="sort-by">
+                <option value="name">Alfabética</option>
+                <option value="rarity">Raridade</option>
+                <option value="suit">Naipe</option>
+                <option value="level">Nível</option>
+              </select>
+              <button id="sort-dir" class="sort-dir-btn" title="Alternar crescente/decrescente">
+                <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                  <path d="M8 3l4 5H4z"/>
+                  <path d="M8 13l-4-5h8z" opacity="0.35"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="view-toggles">
             <button id="view-compact" class="view-btn active" aria-label="Visualização compacta" title="Compacto">
