@@ -487,9 +487,13 @@
     const rarityBadge = getBadgeRarityClass(card.Rarity);
 
     let html = `
-      <div class="modal-hero">
-        <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="eager">
+      <div class="modal-body">
+      <div class="modal-left">
+        <div class="modal-hero">
+          <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="eager">
+        </div>
       </div>
+      <div class="modal-right">
       <div class="modal-card-header">
         <h2 class="modal-card-name">${esc(card.Name)}</h2>
         <div class="modal-card-badges">
@@ -646,6 +650,8 @@
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/></svg>
           Compartilhar
         </button>
+      </div>
+      </div>
       </div>
     `;
 

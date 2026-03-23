@@ -733,9 +733,9 @@ body {
   position: relative;
   width: 100%;
   max-width: 720px;
-  max-height: 90dvh;
+  max-height: 100dvh;
   background: var(--bg-elevated);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-radius: 0;
   overflow-y: auto;
   transform: translateY(100%);
   transition: transform var(--transition-slow);
@@ -758,10 +758,9 @@ body {
 }
 
 .modal-close-btn {
-  position: sticky;
+  position: absolute;
   top: 12px;
-  float: right;
-  margin: 12px 12px 0 0;
+  right: 12px;
   z-index: 10;
   width: 36px;
   height: 36px;
@@ -787,13 +786,13 @@ body {
 }
 
 .modal-content {
-  padding: 20px 24px 32px;
+  padding: 48px 16px 32px;
 }
 
 /* Modal Image */
 .modal-hero {
   width: 100%;
-  max-width: 300px;
+  max-width: 350px;
   margin: 0 auto 24px;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -962,6 +961,109 @@ body {
 .btn-share.copied {
   color: #22c55e;
   border-color: #22c55e;
+}
+
+/* ── Modal Desktop Side-by-Side Layout ────── */
+@media (min-width: 1024px) {
+  .modal-overlay {
+    padding: 3dvh 40px;
+  }
+
+  .modal-panel {
+    max-width: 1024px; /* Largura fixa do modal */
+    height: 80dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    float: none;
+    margin: 0;
+    z-index: 10;
+  }
+
+  .modal-content {
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .modal-body {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .modal-left {
+    flex-shrink: 0;
+    width: 540px;       /* Largura fixa da imagem da carta */
+    overflow: hidden;
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    position: relative;
+    background: var(--bg-tertiary);
+    border-right: 1px solid var(--border-color);
+  }
+
+  /* Subtle gradient overlay for depth */
+  .modal-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, var(--accent-subtle) 0%, transparent 70%),
+      radial-gradient(ellipse at 50% 100%, var(--accent-subtle) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Thin decorative accent line on the right edge */
+  .modal-left::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    right: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--accent) 40%, var(--accent) 60%, transparent);
+    opacity: 0.3;
+    z-index: 2;
+  }
+
+  .modal-left .modal-hero {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .modal-left .modal-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+  }
+
+  .modal-right {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 28px 32px;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
 }
 
 /* ── Scroll Sentinel ──────────────────────── */
