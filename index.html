@@ -86,38 +86,120 @@
     <main id="app-main">
       <!-- Filter Panel -->
       <section id="filter-panel" class="filter-panel">
-        <div class="filter-row">
+        <!-- Row 1: Text inputs -->
+        <div class="filter-row filter-row-text">
           <div class="filter-group filter-search">
             <label for="filter-name">Nome</label>
             <input type="search" id="filter-name" placeholder="Buscar por nome..." autocomplete="off">
           </div>
-          <div class="filter-group">
-            <label for="filter-suit">Naipe</label>
-            <select id="filter-suit">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-rarity">Raridade</label>
-            <select id="filter-rarity">
-              <option value="">Todas</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-artist">Artista</label>
-            <select id="filter-artist">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-knowledge">Conhecimento</label>
-            <select id="filter-knowledge">
-              <option value="">Todos</option>
-            </select>
+          <div class="filter-group filter-search">
+            <label for="filter-wording">Wording</label>
+            <input type="search" id="filter-wording" placeholder="Buscar em efeitos, técnicas, flavor..." autocomplete="off">
           </div>
         </div>
 
+        <!-- Row 2: Multi-select filters -->
+        <div class="filter-row filter-row-multi">
+          <div class="filter-group">
+            <label>Naipe</label>
+            <div class="multi-select" id="ms-suit" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Nível</label>
+            <div class="multi-select" id="ms-level" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Raridade</label>
+            <div class="multi-select" id="ms-rarity" data-placeholder="Todas"></div>
+          </div>
+          <div class="filter-group">
+            <label>Conhecimento</label>
+            <div class="multi-select" id="ms-knowledge" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Caminho</label>
+            <div class="multi-select" id="ms-path" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Craft</label>
+            <div class="multi-select" id="ms-craft" data-placeholder="Todos"></div>
+          </div>
+        </div>
+
+        <!-- Row 3: More multi-selects -->
+        <div class="filter-row filter-row-multi">
+          <div class="filter-group">
+            <label>Especificador</label>
+            <div class="multi-select" id="ms-specifier" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Tipo Companion</label>
+            <div class="multi-select" id="ms-companion-type" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Essência</label>
+            <div class="multi-select" id="ms-essence" data-placeholder="Todas"></div>
+          </div>
+          <div class="filter-group">
+            <label>Lignum</label>
+            <div class="multi-select" id="ms-lignum" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Tag</label>
+            <div class="multi-select" id="ms-tag" data-placeholder="Todas"></div>
+          </div>
+          <div class="filter-group">
+            <label>Coleção</label>
+            <div class="multi-select" id="ms-collection" data-placeholder="Todas"></div>
+          </div>
+        </div>
+
+        <!-- Row 4: More filters -->
+        <div class="filter-row filter-row-multi">
+          <div class="filter-group">
+            <label>Artista</label>
+            <div class="multi-select" id="ms-artist" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Estilo</label>
+            <div class="multi-select" id="ms-style" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Summus</label>
+            <div class="multi-select" id="ms-summus" data-placeholder="Todos"></div>
+          </div>
+          <div class="filter-group">
+            <label>Preço</label>
+            <div class="filter-range">
+              <input type="number" id="filter-price-min" placeholder="Min" min="0" step="1">
+              <span class="range-separator">—</span>
+              <input type="number" id="filter-price-max" placeholder="Max" min="0" step="1">
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>Coded</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-filter="coded" data-value="true">On</button>
+              <button class="toggle-btn" data-filter="coded" data-value="false">Off</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <label>Reviewed</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-filter="reviewed" data-value="true">On</button>
+              <button class="toggle-btn" data-filter="reviewed" data-value="false">Off</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
         <div class="filter-actions">
+          <button id="btn-clear-filters" class="btn-ghost">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+            Limpar filtros
+          </button>
           <div class="sort-group">
             <label for="sort-by">Ordenar</label>
             <select id="sort-by">

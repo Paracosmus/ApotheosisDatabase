@@ -11,8 +11,8 @@
     API_DEV: 'https://get.lunehub.com/apotheosis/source/dev-cards.json',
     IMAGE_BASE: 'https://get.lunehub.com/apotheosis/prints/',
     IMAGE_EXT: '.avif',
-    VIRTUAL_BUFFER: 10,       // extra items rendered above/below viewport
-    BATCH_SIZE: 40,            // items per render batch
+    VIRTUAL_BUFFER: 10,
+    BATCH_SIZE: 40,
     SKELETON_COUNT: 12,
   };
 
@@ -30,15 +30,169 @@
   const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
   const SUIT_ORDER = ['House', 'Class', 'Entity', 'Item', 'Skill', 'Companion', 'Event', 'Summus'];
 
+  // ── Multi-Select Component ────────────────
+  class MultiSelect {
+    constructor(container, options = {}) {
+      this.container = container;
+      this.selected = new Set();
+      this.options = [];
+      this.filteredOptions = [];
+      this.isOpen = false;
+      this.searchable = options.searchable !== false;
+      this.placeholder = container.dataset.placeholder || 'Selecionar...';
+      this.onChange = options.onChange || (() => {});
+      this._build();
+    }
+
+    _build() {
+      this.container.classList.add('ms-container');
+      this.container.innerHTML = `
+        <div class="ms-trigger">
+          <div class="ms-chips"></div>
+          <span class="ms-placeholder">${esc(this.placeholder)}</span>
+          <svg class="ms-arrow" viewBox="0 0 12 12" fill="currentColor"><path d="M2 4l4 4 4-4"/></svg>
+        </div>
+        <div class="ms-dropdown">
+          ${this.searchable ? '<input class="ms-search" type="text" placeholder="Buscar..." autocomplete="off">' : ''}
+          <div class="ms-options"></div>
+        </div>
+      `;
+
+      this.triggerEl = this.container.querySelector('.ms-trigger');
+      this.chipsEl = this.container.querySelector('.ms-chips');
+      this.placeholderEl = this.container.querySelector('.ms-placeholder');
+      this.dropdownEl = this.container.querySelector('.ms-dropdown');
+      this.optionsEl = this.container.querySelector('.ms-options');
+      this.searchEl = this.container.querySelector('.ms-search');
+
+      this.triggerEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggle();
+      });
+
+      if (this.searchEl) {
+        this.searchEl.addEventListener('input', () => this._filterOptions());
+        this.searchEl.addEventListener('click', (e) => e.stopPropagation());
+      }
+    }
+
+    setOptions(items) {
+      this.options = items.map((item) => typeof item === 'string' ? { value: item, label: item } : item);
+      this.filteredOptions = [...this.options];
+      this._renderOptions();
+    }
+
+    _filterOptions() {
+      const q = (this.searchEl?.value || '').toLowerCase();
+      this.filteredOptions = q
+        ? this.options.filter((o) => o.label.toLowerCase().includes(q))
+        : [...this.options];
+      this._renderOptions();
+    }
+
+    _renderOptions() {
+      this.optionsEl.innerHTML = '';
+      if (this.filteredOptions.length === 0) {
+        this.optionsEl.innerHTML = '<div class="ms-empty">Nenhuma opção</div>';
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      for (const opt of this.filteredOptions) {
+        const div = document.createElement('div');
+        div.className = 'ms-option' + (this.selected.has(opt.value) ? ' ms-option-selected' : '');
+        div.dataset.value = opt.value;
+        div.innerHTML = `<span class="ms-check">${this.selected.has(opt.value) ? '&#10003;' : ''}</span><span>${esc(opt.label)}</span>`;
+        div.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._toggleOption(opt.value);
+        });
+        frag.appendChild(div);
+      }
+      this.optionsEl.appendChild(frag);
+    }
+
+    _toggleOption(value) {
+      if (this.selected.has(value)) {
+        this.selected.delete(value);
+      } else {
+        this.selected.add(value);
+      }
+      this._renderChips();
+      this._renderOptions();
+      this.onChange([...this.selected]);
+    }
+
+    _renderChips() {
+      this.chipsEl.innerHTML = '';
+      if (this.selected.size === 0) {
+        this.placeholderEl.style.display = '';
+        return;
+      }
+      this.placeholderEl.style.display = 'none';
+      const frag = document.createDocumentFragment();
+      for (const val of this.selected) {
+        const opt = this.options.find((o) => o.value === val);
+        if (!opt) continue;
+        const chip = document.createElement('span');
+        chip.className = 'ms-chip';
+        chip.innerHTML = `${esc(opt.label)}<button class="ms-chip-remove" type="button">&times;</button>`;
+        chip.querySelector('.ms-chip-remove').addEventListener('click', (e) => {
+          e.stopPropagation();
+          this._toggleOption(val);
+        });
+        frag.appendChild(chip);
+      }
+      this.chipsEl.appendChild(frag);
+    }
+
+    toggle() {
+      this.isOpen ? this.close() : this.open();
+    }
+
+    open() {
+      this.isOpen = true;
+      this.container.classList.add('ms-open');
+      if (this.searchEl) {
+        this.searchEl.value = '';
+        this._filterOptions();
+        setTimeout(() => this.searchEl.focus(), 50);
+      }
+    }
+
+    close() {
+      this.isOpen = false;
+      this.container.classList.remove('ms-open');
+    }
+
+    getValues() {
+      return [...this.selected];
+    }
+
+    clear() {
+      this.selected.clear();
+      this._renderChips();
+      this._renderOptions();
+    }
+  }
+
+  // Close all multi-selects on outside click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.ms-container.ms-open').forEach((el) => {
+      el.querySelector('.ms-trigger')?.click();
+    });
+  });
+
   // ── State ─────────────────────────────────
   const state = {
     allCards: [],
     filteredCards: [],
     renderedCount: 0,
-    viewMode: 'compact',   // compact | medium | large
+    viewMode: 'compact',
     isLoading: false,
     hasSearched: false,
     dataReady: false,
+    multiSelects: {},
+    toggleFilters: { coded: null, reviewed: null },
   };
 
   // ── DOM References ────────────────────────
@@ -47,12 +201,12 @@
 
   const dom = {
     filterName: $('#filter-name'),
-    filterSuit: $('#filter-suit'),
-    filterRarity: $('#filter-rarity'),
-    filterArtist: $('#filter-artist'),
-    filterKnowledge: $('#filter-knowledge'),
+    filterWording: $('#filter-wording'),
+    filterPriceMin: $('#filter-price-min'),
+    filterPriceMax: $('#filter-price-max'),
     sortBy: $('#sort-by'),
     btnSearch: $('#btn-search'),
+    btnClearFilters: $('#btn-clear-filters'),
     btnRetry: $('#btn-retry'),
     emptyState: $('#empty-state'),
     errorState: $('#error-state'),
@@ -86,7 +240,6 @@
   // ── Theme Manager ─────────────────────────
   function initTheme() {
     const stored = localStorage.getItem('apotheosis-theme');
-    // Default to dark mode on first access; respect stored preference afterwards
     if (stored === 'dark' || !stored) {
       document.documentElement.classList.add('dark');
       document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0a0a');
@@ -115,8 +268,6 @@
 
     const buffer = await response.arrayBuffer();
     let text;
-
-    // Handle UTF-16LE BOM
     const view = new Uint8Array(buffer);
     if (view[0] === 0xFF && view[1] === 0xFE) {
       text = new TextDecoder('utf-16le').decode(buffer);
@@ -130,35 +281,125 @@
   }
 
   // ── Filter Population ─────────────────────
+  function initMultiSelects() {
+    const ids = [
+      'ms-suit', 'ms-level', 'ms-rarity', 'ms-knowledge', 'ms-path',
+      'ms-craft', 'ms-specifier', 'ms-companion-type', 'ms-essence',
+      'ms-lignum', 'ms-tag', 'ms-collection', 'ms-artist', 'ms-style', 'ms-summus',
+    ];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) {
+        state.multiSelects[id] = new MultiSelect(el, {
+          searchable: true,
+          onChange: () => { if (state.hasSearched) liveFilter(); },
+        });
+      }
+    }
+  }
+
   function populateFilters(cards) {
     const suits = new Set();
+    const levels = new Set();
     const rarities = new Set();
-    const artists = new Set();
     const knowledges = new Set();
+    const paths = new Set();
+    const crafts = new Set();
+    const specifiers = new Set();
+    const companionTypes = new Set();
+    const essences = new Set();
+    const lignums = new Set();
+    const tags = new Set();
+    const collections = new Set();
+    const artists = new Set();
+    const summusKnowledges = new Set();
 
     cards.forEach((card) => {
       if (card.Suit) suits.add(card.Suit);
+      if (card.Level != null) levels.add(String(card.Level));
       if (card.Rarity) rarities.add(card.Rarity);
       if (card.Artist && card.Artist.trim()) artists.add(card.Artist.trim());
+
+      // Knowledge
+      if (card.Knowledge) knowledges.add(card.Knowledge);
       if (card.Knowledges) card.Knowledges.forEach((k) => knowledges.add(k));
+      // "Free Knowledge" for cards that should have knowledge but don't
+      const assetSuits = ['Item', 'Skill', 'Companion', 'Event'];
+      if (assetSuits.includes(card.Suit)) {
+        if (!card.Knowledge && (!card.Knowledges || card.Knowledges.length === 0)) {
+          knowledges.add('Free');
+        }
+      }
+
+      // Path (Class/Companion)
+      if (card.Suit === 'Class' || card.Suit === 'Companion') {
+        if (card.Path && card.Path !== 'None') {
+          paths.add(card.Path);
+        } else {
+          paths.add('(Sem Caminho)');
+        }
+      }
+
+      // Crafts
+      if (card.Suit === 'Item') {
+        if (card.Crafts && card.Crafts.length > 0) {
+          card.Crafts.forEach((c) => crafts.add(c));
+        } else {
+          crafts.add('(Sem Craft)');
+        }
+      }
+
+      // Specifiers (Order field on Entity)
+      if (card.Suit === 'Entity') {
+        if (card.Order) {
+          specifiers.add(card.Order);
+        } else {
+          specifiers.add('(Sem Especificador)');
+        }
+      }
+
+      // CompanionType
+      if (card.CompanionType) companionTypes.add(card.CompanionType);
+
+      // Essence (numeric values)
+      if (card.Essence != null) essences.add(String(card.Essence));
+
+      // Lignum
+      if (card.Lignum) lignums.add(card.Lignum);
+
+      // Tags
+      if (card.Tags) card.Tags.forEach((t) => tags.add(t));
+
+      // Collections (Formats)
+      if (card.Formats) card.Formats.forEach((f) => collections.add(f));
+
+      // Summus (Knowledge1/2/3 on Class cards)
+      if (card.Knowledge1) summusKnowledges.add(card.Knowledge1);
+      if (card.Knowledge2) summusKnowledges.add(card.Knowledge2);
+      if (card.Knowledge3) summusKnowledges.add(card.Knowledge3);
     });
 
-    fillSelect(dom.filterSuit, sortByOrder([...suits], SUIT_ORDER));
-    fillSelect(dom.filterRarity, sortByOrder([...rarities], RARITY_ORDER));
-    fillSelect(dom.filterArtist, [...artists].sort((a, b) => a.localeCompare(b, 'pt-BR')));
-    fillSelect(dom.filterKnowledge, [...knowledges].sort((a, b) => a.localeCompare(b, 'pt-BR')));
-  }
+    const ms = state.multiSelects;
 
-  function fillSelect(selectEl, items) {
-    const firstOption = selectEl.querySelector('option');
-    selectEl.innerHTML = '';
-    selectEl.appendChild(firstOption);
-    items.forEach((item) => {
-      const opt = document.createElement('option');
-      opt.value = item;
-      opt.textContent = item;
-      selectEl.appendChild(opt);
-    });
+    ms['ms-suit']?.setOptions(sortByOrder([...suits], SUIT_ORDER));
+    ms['ms-level']?.setOptions([...levels].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-rarity']?.setOptions(sortByOrder([...rarities], RARITY_ORDER));
+    ms['ms-knowledge']?.setOptions([...knowledges].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-path']?.setOptions([...paths].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-craft']?.setOptions([...crafts].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-specifier']?.setOptions([...specifiers].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-companion-type']?.setOptions([...companionTypes].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-essence']?.setOptions([...essences].sort((a, b) => Number(a) - Number(b)));
+    ms['ms-lignum']?.setOptions([...lignums].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-tag']?.setOptions([...tags].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-collection']?.setOptions([...collections].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-artist']?.setOptions([...artists].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    ms['ms-style']?.setOptions([
+      { value: 'normal', label: 'Normal' },
+      { value: 'full-art', label: 'Full-Art' },
+      { value: 'animated', label: 'Animated' },
+    ]);
+    ms['ms-summus']?.setOptions([...summusKnowledges].sort((a, b) => a.localeCompare(b, 'pt-BR')));
   }
 
   function sortByOrder(arr, order) {
@@ -173,19 +414,165 @@
   }
 
   // ── Filtering & Sorting ───────────────────
+  function getCardTextContent(card) {
+    let text = '';
+    if (card.Effects) {
+      card.Effects.forEach((e) => {
+        if (e.Text) text += ' ' + e.Text;
+        if (e.Keywords) text += ' ' + e.Keywords;
+        if (e.Name) text += ' ' + e.Name;
+      });
+    }
+    if (card.Techniques) {
+      card.Techniques.forEach((t) => {
+        if (t.Effects) t.Effects.forEach((e) => {
+          if (e.Text) text += ' ' + e.Text;
+        });
+      });
+    }
+    if (card.FlavorText) text += ' ' + card.FlavorText;
+    return text.toLowerCase();
+  }
+
   function applyFilters() {
     const nameQuery = dom.filterName.value.trim().toLowerCase();
-    const suit = dom.filterSuit.value;
-    const rarity = dom.filterRarity.value;
-    const artist = dom.filterArtist.value;
-    const knowledge = dom.filterKnowledge.value;
+    const wordingQuery = dom.filterWording.value.trim().toLowerCase();
+    const priceMin = dom.filterPriceMin.value !== '' ? Number(dom.filterPriceMin.value) : null;
+    const priceMax = dom.filterPriceMax.value !== '' ? Number(dom.filterPriceMax.value) : null;
+
+    const ms = state.multiSelects;
+    const suitVals = ms['ms-suit']?.getValues() || [];
+    const levelVals = ms['ms-level']?.getValues() || [];
+    const rarityVals = ms['ms-rarity']?.getValues() || [];
+    const knowledgeVals = ms['ms-knowledge']?.getValues() || [];
+    const pathVals = ms['ms-path']?.getValues() || [];
+    const craftVals = ms['ms-craft']?.getValues() || [];
+    const specifierVals = ms['ms-specifier']?.getValues() || [];
+    const companionTypeVals = ms['ms-companion-type']?.getValues() || [];
+    const essenceVals = ms['ms-essence']?.getValues() || [];
+    const lignumVals = ms['ms-lignum']?.getValues() || [];
+    const tagVals = ms['ms-tag']?.getValues() || [];
+    const collectionVals = ms['ms-collection']?.getValues() || [];
+    const artistVals = ms['ms-artist']?.getValues() || [];
+    const styleVals = ms['ms-style']?.getValues() || [];
+    const summusVals = ms['ms-summus']?.getValues() || [];
+    const codedFilter = state.toggleFilters.coded;
+    const reviewedFilter = state.toggleFilters.reviewed;
 
     let results = state.allCards.filter((card) => {
+      // Name
       if (nameQuery && !card.Name.toLowerCase().includes(nameQuery) && !card.Id.toLowerCase().includes(nameQuery)) return false;
-      if (suit && card.Suit !== suit) return false;
-      if (rarity && card.Rarity !== rarity) return false;
-      if (artist && (card.Artist || '').trim() !== artist) return false;
-      if (knowledge && !(card.Knowledges || []).includes(knowledge)) return false;
+
+      // Wording
+      if (wordingQuery && !getCardTextContent(card).includes(wordingQuery)) return false;
+
+      // Suit
+      if (suitVals.length > 0 && !suitVals.includes(card.Suit)) return false;
+
+      // Level
+      if (levelVals.length > 0 && !levelVals.includes(String(card.Level))) return false;
+
+      // Rarity
+      if (rarityVals.length > 0 && !rarityVals.includes(card.Rarity)) return false;
+
+      // Knowledge
+      if (knowledgeVals.length > 0) {
+        const cardKnowledges = new Set();
+        if (card.Knowledge) cardKnowledges.add(card.Knowledge);
+        if (card.Knowledges) card.Knowledges.forEach((k) => cardKnowledges.add(k));
+        const assetSuits = ['Item', 'Skill', 'Companion', 'Event'];
+        if (assetSuits.includes(card.Suit) && cardKnowledges.size === 0) {
+          cardKnowledges.add('Free');
+        }
+        if (!knowledgeVals.some((v) => cardKnowledges.has(v))) return false;
+      }
+
+      // Path
+      if (pathVals.length > 0) {
+        if (card.Suit !== 'Class' && card.Suit !== 'Companion') return false;
+        const cardPath = (card.Path && card.Path !== 'None') ? card.Path : '(Sem Caminho)';
+        if (!pathVals.includes(cardPath)) return false;
+      }
+
+      // Craft
+      if (craftVals.length > 0) {
+        if (card.Suit !== 'Item') return false;
+        const cardCrafts = (card.Crafts && card.Crafts.length > 0) ? [...new Set(card.Crafts)] : ['(Sem Craft)'];
+        if (!craftVals.some((v) => cardCrafts.includes(v))) return false;
+      }
+
+      // Specifier (Order)
+      if (specifierVals.length > 0) {
+        if (card.Suit !== 'Entity') return false;
+        const cardSpec = card.Order || '(Sem Especificador)';
+        if (!specifierVals.includes(cardSpec)) return false;
+      }
+
+      // CompanionType
+      if (companionTypeVals.length > 0) {
+        if (!companionTypeVals.includes(card.CompanionType)) return false;
+      }
+
+      // Essence
+      if (essenceVals.length > 0) {
+        if (card.Essence == null) return false;
+        if (!essenceVals.includes(String(card.Essence))) return false;
+      }
+
+      // Lignum
+      if (lignumVals.length > 0) {
+        if (!lignumVals.includes(card.Lignum)) return false;
+      }
+
+      // Tag
+      if (tagVals.length > 0) {
+        if (!card.Tags || !tagVals.some((v) => card.Tags.includes(v))) return false;
+      }
+
+      // Collection (Formats)
+      if (collectionVals.length > 0) {
+        if (!card.Formats || !collectionVals.some((v) => card.Formats.includes(v))) return false;
+      }
+
+      // Artist
+      if (artistVals.length > 0) {
+        if (!artistVals.includes((card.Artist || '').trim())) return false;
+      }
+
+      // Style
+      if (styleVals.length > 0) {
+        const cardStyles = [];
+        if (card.FullArt) cardStyles.push('full-art');
+        if (card.Tokenable) cardStyles.push('animated');
+        if (!card.FullArt && !card.Tokenable) cardStyles.push('normal');
+        if (card.FullArt === false && !card.Tokenable) cardStyles.push('normal');
+        if (!styleVals.some((v) => cardStyles.includes(v))) return false;
+      }
+
+      // Summus (Knowledge1/2/3)
+      if (summusVals.length > 0) {
+        const cardSummus = new Set();
+        if (card.Knowledge1) cardSummus.add(card.Knowledge1);
+        if (card.Knowledge2) cardSummus.add(card.Knowledge2);
+        if (card.Knowledge3) cardSummus.add(card.Knowledge3);
+        if (cardSummus.size === 0) return false;
+        if (!summusVals.some((v) => cardSummus.has(v))) return false;
+      }
+
+      // Price
+      if (priceMin !== null && (card.Price == null || card.Price < priceMin)) return false;
+      if (priceMax !== null && (card.Price == null || card.Price > priceMax)) return false;
+
+      // Coded
+      if (codedFilter !== null) {
+        if (card.Coded !== codedFilter) return false;
+      }
+
+      // Reviewed
+      if (reviewedFilter !== null) {
+        if (card.Reviewed !== reviewedFilter) return false;
+      }
+
       return true;
     });
 
@@ -758,23 +1145,58 @@
     // Search button
     dom.btnSearch.addEventListener('click', performSearch);
 
-    // Enter key in search input
+    // Enter key in search inputs
     dom.filterName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') performSearch();
+    });
+    dom.filterWording.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') performSearch();
     });
 
     // Retry button
     dom.btnRetry.addEventListener('click', performSearch);
 
-    // Filter/Sort changes trigger re-filter if already searched
-    [dom.filterSuit, dom.filterRarity, dom.filterArtist, dom.filterKnowledge, dom.sortBy].forEach((el) => {
-      el.addEventListener('change', () => {
-        if (state.hasSearched) {
-          const results = applyFilters();
-          displayCards(results);
+    // Live filter on sort change
+    dom.sortBy.addEventListener('change', () => {
+      if (state.hasSearched) liveFilter();
+    });
+
+    // Live filter on text input (debounced)
+    let debounceTimer;
+    const debouncedFilter = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (state.hasSearched) liveFilter();
+      }, 300);
+    };
+    dom.filterName.addEventListener('input', debouncedFilter);
+    dom.filterWording.addEventListener('input', debouncedFilter);
+    dom.filterPriceMin.addEventListener('input', debouncedFilter);
+    dom.filterPriceMax.addEventListener('input', debouncedFilter);
+
+    // Toggle buttons (Coded / Reviewed)
+    document.querySelectorAll('.toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        const value = btn.dataset.value === 'true';
+        const isActive = btn.classList.contains('toggle-active');
+
+        // Deselect all in this group
+        btn.parentElement.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('toggle-active'));
+
+        if (isActive) {
+          state.toggleFilters[filter] = null;
+        } else {
+          btn.classList.add('toggle-active');
+          state.toggleFilters[filter] = value;
         }
+
+        if (state.hasSearched) liveFilter();
       });
     });
+
+    // Clear all filters
+    dom.btnClearFilters.addEventListener('click', clearAllFilters);
 
     // View mode buttons
     dom.viewCompact.addEventListener('click', () => setViewMode('compact'));
@@ -793,9 +1215,30 @@
     });
   }
 
+  function liveFilter() {
+    const results = applyFilters();
+    displayCards(results);
+  }
+
+  function clearAllFilters() {
+    dom.filterName.value = '';
+    dom.filterWording.value = '';
+    dom.filterPriceMin.value = '';
+    dom.filterPriceMax.value = '';
+
+    Object.values(state.multiSelects).forEach((ms) => ms.clear());
+
+    state.toggleFilters.coded = null;
+    state.toggleFilters.reviewed = null;
+    document.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('toggle-active'));
+
+    if (state.hasSearched) liveFilter();
+  }
+
   // ── Init ──────────────────────────────────
   function init() {
     initTheme();
+    initMultiSelects();
     bindEvents();
     setupScrollObserver();
     preloadData();

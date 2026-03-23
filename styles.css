@@ -218,21 +218,26 @@ body {
   margin-bottom: 12px;
 }
 
+.filter-row-text {
+  grid-template-columns: 1fr;
+}
+
+.filter-row-multi {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 @media (min-width: 640px) {
-  .filter-row {
-    grid-template-columns: repeat(2, 1fr);
+  .filter-row-text {
+    grid-template-columns: 1fr 1fr;
   }
-  .filter-search {
-    grid-column: span 2;
+  .filter-row-multi {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .filter-row {
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  }
-  .filter-search {
-    grid-column: span 1;
+  .filter-row-multi {
+    grid-template-columns: repeat(6, 1fr);
   }
 }
 
@@ -281,6 +286,312 @@ body {
 
 .filter-group input::placeholder {
   color: var(--text-tertiary);
+}
+
+/* ── Multi-Select Component ───────────────── */
+.ms-container {
+  position: relative;
+}
+
+.ms-trigger {
+  min-height: 40px;
+  padding: 4px 28px 4px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.ms-trigger:hover {
+  border-color: var(--text-tertiary);
+}
+
+.ms-container.ms-open .ms-trigger {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.ms-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: transform var(--transition-fast);
+}
+
+.ms-container.ms-open .ms-arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.ms-placeholder {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  padding: 2px 4px;
+}
+
+.ms-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.ms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px 2px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-radius: 100px;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.ms-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  opacity: 0.7;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.ms-chip-remove:hover {
+  opacity: 1;
+  background: var(--accent);
+  color: #fff;
+}
+
+.ms-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 150;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  max-height: 240px;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.ms-container.ms-open .ms-dropdown {
+  display: flex;
+}
+
+.ms-search {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  outline: none;
+  flex-shrink: 0;
+}
+
+.ms-search::placeholder {
+  color: var(--text-tertiary);
+}
+
+.ms-options {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+
+.ms-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.ms-option:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.ms-option-selected {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent-subtle);
+}
+
+.ms-option-selected:hover {
+  background: var(--accent-subtle);
+}
+
+.ms-check {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border-color);
+  border-radius: 3px;
+  font-size: 0.625rem;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.ms-option-selected .ms-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ms-empty {
+  padding: 16px 10px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+}
+
+/* ── Filter Range (Price) ─────────────────── */
+.filter-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-range input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 10px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all var(--transition-fast);
+  -moz-appearance: textfield;
+}
+
+.filter-range input::-webkit-inner-spin-button,
+.filter-range input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.filter-range input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.filter-range input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.range-separator {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ── Toggle Group (Coded/Reviewed) ────────── */
+.toggle-group {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  height: 40px;
+  align-items: center;
+}
+
+.toggle-btn {
+  flex: 1;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-btn:hover {
+  color: var(--text-secondary);
+}
+
+.toggle-btn.toggle-active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Clear Filters Button ─────────────────── */
+.btn-ghost {
+  height: 40px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-ghost:hover {
+  color: var(--text-primary);
+  border-color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+}
+
+.btn-ghost svg {
+  flex-shrink: 0;
 }
 
 .filter-actions {
