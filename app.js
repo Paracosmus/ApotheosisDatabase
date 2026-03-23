@@ -250,6 +250,7 @@
     sortChips: $('#sort-chips'),
     sortFieldSelect: $('#sort-field-select'),
     sortAddBtn: $('#sort-add-btn'),
+    btnClearSort: $('#btn-clear-sort'),
     btnSearch: $('#btn-search'),
     btnClearFilters: $('#btn-clear-filters'),
     btnRetry: $('#btn-retry'),
@@ -1494,6 +1495,13 @@
 
     // Clear all filters
     dom.btnClearFilters.addEventListener('click', clearAllFilters);
+
+    // Clear sort
+    dom.btnClearSort.addEventListener('click', () => {
+      state.sortCriteria = [{ key: 'name', direction: 'asc' }];
+      renderSortChips();
+      if (state.hasSearched) liveFilter();
+    });
 
     // View mode buttons
     dom.viewCompact.addEventListener('click', () => setViewMode('compact'));
