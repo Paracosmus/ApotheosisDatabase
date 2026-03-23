@@ -203,6 +203,7 @@
     dataReady: false,
     multiSelects: {},
     toggleFilters: { coded: null, reviewed: null },
+    filterLogic: { knowledge: 'or', craft: 'or', tag: 'or', format: 'or', specifier: 'or' },
   };
 
   // ── DOM References ────────────────────────
@@ -567,7 +568,11 @@
         if (assetSuits.includes(card.Suit) && cardKnowledges.size === 0) {
           cardKnowledges.add('Free');
         }
-        if (!knowledgeVals.some((v) => cardKnowledges.has(v))) return false;
+        if (state.filterLogic.knowledge === 'and') {
+          if (!knowledgeVals.every((v) => cardKnowledges.has(v))) return false;
+        } else {
+          if (!knowledgeVals.some((v) => cardKnowledges.has(v))) return false;
+        }
       }
 
       // Path
@@ -581,7 +586,11 @@
       if (craftVals.length > 0) {
         if (card.Suit !== 'Item') return false;
         const cardCrafts = (card.Crafts && card.Crafts.length > 0) ? [...new Set(card.Crafts)] : ['(Sem Craft)'];
-        if (!craftVals.some((v) => cardCrafts.includes(v))) return false;
+        if (state.filterLogic.craft === 'and') {
+          if (!craftVals.every((v) => cardCrafts.includes(v))) return false;
+        } else {
+          if (!craftVals.some((v) => cardCrafts.includes(v))) return false;
+        }
       }
 
       // Specifier
@@ -594,7 +603,11 @@
         if (card.Accessory) cardSpecs.push('Accessory');
         if (card.Utility) cardSpecs.push('Utility');
         if (cardSpecs.length === 0) cardSpecs.push('(Sem Especificador)');
-        if (!specifierVals.some((v) => cardSpecs.includes(v))) return false;
+        if (state.filterLogic.specifier === 'and') {
+          if (!specifierVals.every((v) => cardSpecs.includes(v))) return false;
+        } else {
+          if (!specifierVals.some((v) => cardSpecs.includes(v))) return false;
+        }
       }
 
       // Entity Order
@@ -668,7 +681,12 @@
 
       // Tag
       if (tagVals.length > 0) {
-        if (!card.Tags || !tagVals.some((v) => card.Tags.includes(v))) return false;
+        if (!card.Tags || card.Tags.length === 0) return false;
+        if (state.filterLogic.tag === 'and') {
+          if (!tagVals.every((v) => card.Tags.includes(v))) return false;
+        } else {
+          if (!tagVals.some((v) => card.Tags.includes(v))) return false;
+        }
       }
 
       // Collection
@@ -678,7 +696,12 @@
 
       // Formats
       if (formatVals.length > 0) {
-        if (!card.Formats || !formatVals.some((v) => card.Formats.includes(v))) return false;
+        if (!card.Formats || card.Formats.length === 0) return false;
+        if (state.filterLogic.format === 'and') {
+          if (!formatVals.every((v) => card.Formats.includes(v))) return false;
+        } else {
+          if (!formatVals.some((v) => card.Formats.includes(v))) return false;
+        }
       }
 
       // Artist
@@ -1374,6 +1397,19 @@
       });
     });
 
+    // Logic toggle buttons (AND/OR)
+    document.querySelectorAll('.logic-toggle').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const filter = btn.dataset.filter;
+        const isAnd = state.filterLogic[filter] === 'and';
+        state.filterLogic[filter] = isAnd ? 'or' : 'and';
+        btn.textContent = isAnd ? 'OR' : 'AND';
+        btn.classList.toggle('logic-and', !isAnd);
+        if (state.hasSearched) liveFilter();
+      });
+    });
+
     // Clear all filters
     dom.btnClearFilters.addEventListener('click', clearAllFilters);
 
@@ -1410,6 +1446,13 @@
     state.toggleFilters.coded = null;
     state.toggleFilters.reviewed = null;
     document.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('toggle-active'));
+
+    // Reset logic toggles
+    for (const key of Object.keys(state.filterLogic)) state.filterLogic[key] = 'or';
+    document.querySelectorAll('.logic-toggle').forEach((btn) => {
+      btn.textContent = 'OR';
+      btn.classList.remove('logic-and');
+    });
 
     if (state.hasSearched) liveFilter();
   }
