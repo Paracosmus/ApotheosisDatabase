@@ -921,14 +921,6 @@
     }
     el.innerHTML = `
       <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="lazy" decoding="async">
-      <div class="card-large-overlay">
-        <div class="card-large-name">${esc(card.Name)}</div>
-        <div class="card-large-meta">
-          <span class="card-large-suit ${getSuitClass(card.Suit)}"><span class="apt-icon">${suitIcon}</span> ${esc(card.Suit)}</span>
-          ${summusPill}
-          <span>${esc(card.Rarity)}</span>
-        </div>
-      </div>
     `;
     el.addEventListener('click', () => openModal(card));
     return el;

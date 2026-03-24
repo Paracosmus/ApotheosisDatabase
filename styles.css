@@ -1038,41 +1038,6 @@ body {
   transform: scale(1.04);
 }
 
-.card-large-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40px 16px 16px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-  color: #fff;
-  pointer-events: none;
-}
-
-.card-large-name {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.card-large-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
-  opacity: 0.85;
-}
-
-.card-large-suit {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-}
-
 /* ── Skeleton Screens ─────────────────────── */
 @keyframes shimmer {
   0% { background-position: -500px 0; }
