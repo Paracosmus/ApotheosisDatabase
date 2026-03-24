@@ -863,9 +863,17 @@
     const el = document.createElement('div');
     el.className = 'card-compact';
     el.setAttribute('data-card-id', card.Id);
+    const suitIcon = SUIT_ICONS[card.Suit] || '';
+    let summusPill = '';
+    if (card.Summus) {
+      const summusLabel = formatSummusLabel(card.Summus);
+      const summusIcon = getSummusIcon(card.Summus);
+      summusPill = `<span class="card-compact-suit" style="background-color:#FF22B2"><span class="apt-icon">${summusIcon}</span> ${esc(summusLabel)}</span>`;
+    }
     el.innerHTML = `
       <span class="card-compact-name">${esc(card.Name)}</span>
-      <span class="card-compact-suit ${getSuitClass(card.Suit)}">${esc(card.Suit)}</span>
+      <span class="card-compact-suit ${getSuitClass(card.Suit)}"><span class="apt-icon">${suitIcon}</span> ${esc(card.Suit)}</span>
+      ${summusPill}
       <span class="card-compact-rarity"><span class="rarity-dot ${getRarityClass(card.Rarity)}"></span>${esc(card.Rarity)}</span>
     `;
     el.addEventListener('click', () => openModal(card));
@@ -876,6 +884,13 @@
     const el = document.createElement('div');
     el.className = 'card-medium';
     el.setAttribute('data-card-id', card.Id);
+    const suitIcon = SUIT_ICONS[card.Suit] || '';
+    let summusPill = '';
+    if (card.Summus) {
+      const summusLabel = formatSummusLabel(card.Summus);
+      const summusIcon = getSummusIcon(card.Summus);
+      summusPill = `<span class="card-medium-suit" style="background-color:#FF22B2"><span class="apt-icon">${summusIcon}</span> ${esc(summusLabel)}</span>`;
+    }
     el.innerHTML = `
       <div class="card-medium-img-wrap">
         <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="lazy" decoding="async">
@@ -883,7 +898,8 @@
       <div class="card-medium-info">
         <div class="card-medium-name">${esc(card.Name)}</div>
         <div class="card-medium-meta">
-          <span class="card-medium-suit ${getSuitClass(card.Suit)}">${esc(card.Suit)}</span>
+          <span class="card-medium-suit ${getSuitClass(card.Suit)}"><span class="apt-icon">${suitIcon}</span> ${esc(card.Suit)}</span>
+          ${summusPill}
           <span class="card-medium-rarity"><span class="rarity-dot ${getRarityClass(card.Rarity)}"></span>${esc(card.Rarity)}</span>
         </div>
       </div>
@@ -896,12 +912,20 @@
     const el = document.createElement('div');
     el.className = 'card-large';
     el.setAttribute('data-card-id', card.Id);
+    const suitIcon = SUIT_ICONS[card.Suit] || '';
+    let summusPill = '';
+    if (card.Summus) {
+      const summusLabel = formatSummusLabel(card.Summus);
+      const summusIcon = getSummusIcon(card.Summus);
+      summusPill = `<span class="card-large-suit" style="background-color:#FF22B2"><span class="apt-icon">${summusIcon}</span> ${esc(summusLabel)}</span>`;
+    }
     el.innerHTML = `
       <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="lazy" decoding="async">
       <div class="card-large-overlay">
         <div class="card-large-name">${esc(card.Name)}</div>
         <div class="card-large-meta">
-          <span class="card-large-suit ${getSuitClass(card.Suit)}">${esc(card.Suit)}</span>
+          <span class="card-large-suit ${getSuitClass(card.Suit)}"><span class="apt-icon">${suitIcon}</span> ${esc(card.Suit)}</span>
+          ${summusPill}
           <span>${esc(card.Rarity)}</span>
         </div>
       </div>
@@ -1102,9 +1126,249 @@
     history.replaceState(null, '', url);
   }
 
+  // ── Icon & Color Maps for Modal ────────────
+  const SUIT_ICONS = {
+    House: '\uE954',
+    Class: '\uE951',
+    Entity: '\uE952',
+    Item: '\uE955',
+    Skill: '\uE956',
+    Companion: '\uE950',
+    Event: '\uE953',
+    Summus: '\uE94B',
+  };
+
+  const SUMMUS_ICONS = {
+    Collegium: '\uE9D6',
+    Daemon: '\uE96D',
+    Dominium: '\uE9DC',
+    Magisterium: '\uE95C',
+    Ultimatum: '\uEAB7',
+  };
+
+  const PATH_ICONS = {
+    'Mago': '\uE91B\uE91C',
+    'TheMagician': '\uE91B\uE91C',
+    'Sacerdotisa': '\uE91B\uE91D',
+    'TheHighPriestess': '\uE91B\uE91D',
+    'Imperatriz': '\uE91B\uE91E',
+    'TheEmpress': '\uE91B\uE91E',
+    'Imperador': '\uE91B\uE91F',
+    'TheEmperor': '\uE91B\uE91F',
+    'Sacerdote': '\uE91B\uE920',
+    'TheHierophant': '\uE91B\uE920',
+    'Amantes': '\uE91C\uE91C',
+    'TheLovers': '\uE91C\uE91C',
+    'Carro': '\uE91C\uE91D',
+    'TheChariot': '\uE91C\uE91D',
+    'Pot\u00EAncia': '\uE91C\uE91E',
+    'Strength': '\uE91C\uE91E',
+    'Eremita': '\uE91C\uE91F',
+    'TheHermit': '\uE91C\uE91F',
+    'Roda': '\uE91C\uE920',
+    'WheelOfFortune': '\uE91C\uE920',
+    'Justi\u00E7a': '\uE91D\uE91D',
+    'Justice': '\uE91D\uE91D',
+    'Enforcado': '\uE91D\uE91E',
+    'TheHangedMan': '\uE91D\uE91E',
+    'Morte': '\uE91D\uE91F',
+    'Death': '\uE91D\uE91F',
+    'Temperan\u00E7a': '\uE91D\uE920',
+    'Temperance': '\uE91D\uE920',
+    'Diabo': '\uE91E\uE91E',
+    'TheDevil': '\uE91E\uE91E',
+    'Torre': '\uE91E\uE91F',
+    'TheTower': '\uE91E\uE91F',
+    'Estrela': '\uE91E\uE920',
+    'TheStar': '\uE91E\uE920',
+    'Lua': '\uE91F\uE91F',
+    'TheMoon': '\uE91F\uE91F',
+    'Sol': '\uE91F\uE920',
+    'TheSun': '\uE91F\uE920',
+    'Julgamento': '\uE920\uE920',
+    'Judgement': '\uE920\uE920',
+    'Mundo': '\uE920',
+    'TheWorld': '\uE920',
+  };
+
+  const LIGNUM_MAP = {
+    'Preta':    { icon: '\uE933', color: '#212121' },
+    'Azul':     { icon: '\uE934', color: '#0D47A1' },
+    'Amarela':  { icon: '\uE935', color: '#FDD835' },
+    'Vermelha': { icon: '\uE936', color: '#B71C1C' },
+    'Branca':   { icon: '\uE937', color: '#BDBDBD' },
+    'Black':    { icon: '\uE933', color: '#212121' },
+    'Blue':     { icon: '\uE934', color: '#0D47A1' },
+    'Yellow':   { icon: '\uE935', color: '#FDD835' },
+    'Red':      { icon: '\uE936', color: '#B71C1C' },
+    'White':    { icon: '\uE937', color: '#BDBDBD' },
+  };
+
+  function getSummusIcon(summus) {
+    const label = formatSummusLabel(summus);
+    return SUMMUS_ICONS[label] || '';
+  }
+
+  function getPathIcon(path) {
+    return PATH_ICONS[path] || '\uE91B\uE91B';
+  }
+
+  function getLignumInfo(color) {
+    return LIGNUM_MAP[color] || { icon: '\uE933', color: 'var(--text-tertiary)' };
+  }
+
+  function getCardStyle(card) {
+    if (card.FullArt) return 'Full-art';
+    if (card.Media) return 'Animated';
+    return 'Normal';
+  }
+
+  function getCardType(card) {
+    const sheetSuits = ['House', 'Class', 'Entity'];
+    return sheetSuits.includes(card.Suit) ? 'Sheet' : 'Asset';
+  }
+
+  function formatModalDate(dateStr) {
+    if (!dateStr) return '—';
+    // Format: "2023.12.27-20.57.37"
+    const match = dateStr.match(/^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2})$/);
+    if (match) {
+      const d = new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
+      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    return esc(dateStr);
+  }
+
+  // ── SVG Icons for Modal Info Rows ─────────
+  const MODAL_ICONS = {
+    formats: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 3h-8l-2 4h12z"/></svg>',
+    calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    modified: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    reviewed: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    coded: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    style: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    score: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    cardType: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/></svg>',
+    path: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76a6 6 0 010 8.49M7.76 16.24a6 6 0 010-8.49"/></svg>',
+  };
+
   function buildModalHTML(card) {
     const suitClass = getSuitClass(card.Suit);
     const rarityBadge = getBadgeRarityClass(card.Rarity);
+    const cardType = getCardType(card);
+
+    // Build badges
+    const badges = [];
+    const suitIcon = SUIT_ICONS[card.Suit] || '';
+    badges.push(`<span class="badge ${suitClass}"><span class="apt-icon">${suitIcon}</span> ${esc(card.Suit)}</span>`);
+    badges.push(`<span class="badge ${rarityBadge}">${esc(card.Rarity)}</span>`);
+    badges.push(`<span class="badge badge-outline">${esc(cardType)}</span>`);
+
+    // Summus pill
+    if (card.Summus) {
+      const summusLabel = formatSummusLabel(card.Summus);
+      const summusIcon = getSummusIcon(card.Summus);
+      badges.push(`<span class="badge badge-summus">${summusIcon} ${esc(summusLabel)}</span>`);
+    }
+
+    // Lignum pill
+    if (card.LignumColor) {
+      const lignum = getLignumInfo(card.LignumColor);
+      const isDark = ['#FDD835', '#BDBDBD'].includes(lignum.color);
+      badges.push(`<span class="badge" style="background-color:${lignum.color};color:${isDark ? '#333' : '#fff'}"><span class="apt-icon">${lignum.icon}</span> ${esc(card.LignumColor)}</span>`);
+    }
+
+    // Build info rows
+    const rows = [];
+
+    // Creation Date
+    if (card.CreationDate) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.calendar}</span>
+        <span class="modal-info-label">Criação</span>
+        <span class="modal-info-value">${formatModalDate(card.CreationDate)}</span>
+      </div>`);
+    }
+
+    // Modified Date
+    if (card.ModifiedDate) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.modified}</span>
+        <span class="modal-info-label">Modificação</span>
+        <span class="modal-info-value">${formatModalDate(card.ModifiedDate)}</span>
+      </div>`);
+    }
+
+    // Score
+    if (card.Score != null) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.score}</span>
+        <span class="modal-info-label">Score</span>
+        <span class="modal-info-value modal-info-value-bold">${card.Score}</span>
+      </div>`);
+    }
+
+    // Path
+    if (card.Path && card.Path !== 'None') {
+      const pathIcon = getPathIcon(card.Path);
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.path}</span>
+        <span class="modal-info-label">Caminho</span>
+        <span class="modal-info-value"><span class="apt-icon">${pathIcon}</span> ${esc(card.Path)}</span>
+      </div>`);
+    }
+
+    // Tags
+    if (card.Tags && card.Tags.length > 0) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon apt-icon">\uE935</span>
+        <span class="modal-info-label">Tags</span>
+        <span class="modal-info-value">${card.Tags.map(t => `<span class="badge badge-outline">${esc(t)}</span>`).join(' ')}</span>
+      </div>`);
+    }
+
+    // Artist
+    if (card.Artist && card.Artist.trim()) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon apt-icon">\uE931</span>
+        <span class="modal-info-label">Artista</span>
+        <span class="modal-info-value">${esc(card.Artist.trim())}</span>
+      </div>`);
+    }
+
+    // Formats
+    if (card.Formats && card.Formats.length > 0) {
+      rows.push(`<div class="modal-info-row">
+        <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.formats}</span>
+        <span class="modal-info-label">Formatos</span>
+        <span class="modal-info-value">${card.Formats.map(f => `<span class="badge badge-format">${esc(f)}</span>`).join(' ')}</span>
+      </div>`);
+    }
+
+    // Full-art / Animated
+    rows.push(`<div class="modal-info-row">
+      <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.style}</span>
+      <span class="modal-info-label">Estilo</span>
+      <span class="modal-info-value">${esc(getCardStyle(card))}</span>
+    </div>`);
+
+    // Reviewed
+    rows.push(`<div class="modal-info-row">
+      <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.reviewed}</span>
+      <span class="modal-info-label">Revisado</span>
+      <span class="modal-info-value"><span class="modal-bool-badge ${card.Reviewed ? 'modal-bool-yes' : 'modal-bool-no'}">${card.Reviewed ? 'Sim' : 'Não'}</span></span>
+    </div>`);
+
+    // Coded
+    rows.push(`<div class="modal-info-row">
+      <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.coded}</span>
+      <span class="modal-info-label">Codificado</span>
+      <span class="modal-info-value"><span class="modal-bool-badge ${card.Coded ? 'modal-bool-yes' : 'modal-bool-no'}">${card.Coded ? 'Sim' : 'Não'}</span></span>
+    </div>`);
 
     let html = `
       <div class="modal-body">
@@ -1117,187 +1381,12 @@
       <div class="modal-card-header">
         <h2 class="modal-card-name">${esc(card.Name)}</h2>
         <div class="modal-card-badges">
-          <span class="badge ${suitClass}">${esc(card.Suit)}</span>
-          <span class="badge ${rarityBadge}">${esc(card.Rarity)}</span>
-          ${card.Type ? `<span class="badge badge-outline">${esc(card.Type)}</span>` : ''}
-          ${card.Category ? `<span class="badge badge-outline">${esc(card.Category)}</span>` : ''}
+          ${badges.join('')}
         </div>
       </div>
-    `;
-
-    // Stats grid
-    const stats = [];
-    if (card.Level != null) stats.push(['Nível', card.Level]);
-    if (card.Score != null) stats.push(['Score', card.Score]);
-    if (card.Action != null) stats.push(['Ação', card.Action]);
-    if (card.Mana != null) stats.push(['Mana', card.Mana]);
-    if (card.Stamina != null) stats.push(['Stamina', card.Stamina]);
-    if (card.Essence != null) stats.push(['Essência', card.Essence]);
-    if (card.CollectionIndex != null) stats.push(['Coleção #', card.CollectionIndex]);
-
-    if (stats.length > 0) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Estatísticas</div>
-        <div class="modal-stats-grid">
-          ${stats.map(([label, val]) => `
-            <div class="modal-stat">
-              <div class="modal-stat-label">${label}</div>
-              <div class="modal-stat-value">${val}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>`;
-    }
-
-    // Attributes
-    const attrs = card.Attributes || card.AttributesBonus;
-    if (attrs) {
-      const attrTitle = card.Attributes ? 'Atributos' : 'Bônus de Atributos';
-      const attrEntries = Object.entries(attrs).filter(([, v]) => v !== 0);
-      if (attrEntries.length > 0) {
-        html += `<div class="modal-section">
-          <div class="modal-section-title">${attrTitle}</div>
-          <div class="modal-stats-grid">
-            ${attrEntries.map(([key, val]) => `
-              <div class="modal-stat">
-                <div class="modal-stat-label">${esc(key)}</div>
-                <div class="modal-stat-value">${val > 0 ? '+' + val : val}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>`;
-      }
-    }
-
-    // Knowledges
-    if (card.Knowledges && card.Knowledges.length > 0) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Conhecimentos</div>
-        <div class="modal-card-badges">
-          ${card.Knowledges.map((k) => `<span class="badge badge-outline">${esc(k)}</span>`).join('')}
-        </div>
-      </div>`;
-    }
-
-    // Tags
-    if (card.Tags && card.Tags.length > 0) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Tags</div>
-        <div class="modal-card-badges">
-          ${card.Tags.map((t) => `<span class="badge badge-outline">${esc(t)}</span>`).join('')}
-        </div>
-      </div>`;
-    }
-
-    // Effects
-    if (card.Effects && card.Effects.length > 0) {
-      const nonEmptyEffects = card.Effects.filter((e) => e.Text || e.Keywords);
-      if (nonEmptyEffects.length > 0) {
-        html += `<div class="modal-section">
-          <div class="modal-section-title">Efeitos</div>
-          <div class="modal-effects">
-            ${nonEmptyEffects.map((eff) => `
-              <div class="modal-effect">
-                ${eff.Name ? `<div class="modal-effect-keywords">${esc(eff.Name)}</div>` : ''}
-                ${eff.Keywords && eff.Keywords !== '(GameplayTags=)' ? `<div class="modal-effect-keywords">${esc(eff.Keywords)}</div>` : ''}
-                <div class="modal-effect-text">${formatEffectText(eff.Text)}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>`;
-      }
-    }
-
-    // Class-specific
-    if (card.Path) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Caminho</div>
-        <p style="color:var(--text-secondary)">${esc(card.Path)}</p>
-      </div>`;
-    }
-
-    // Slots
-    const slots = [];
-    if (card.EquipmentSlots != null) slots.push(['Equipamento', card.EquipmentSlots]);
-    if (card.MementoSlots != null) slots.push(['Memento', card.MementoSlots]);
-    if (card.SupportSlots != null) slots.push(['Suporte', card.SupportSlots]);
-    if (slots.length > 0) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Slots</div>
-        <div class="modal-stats-grid">
-          ${slots.map(([label, val]) => `
-            <div class="modal-stat">
-              <div class="modal-stat-label">${label}</div>
-              <div class="modal-stat-value">${val}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>`;
-    }
-
-    // Damage & Range
-    if (card.Damage && card.Damage.Attribute !== 'None') {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Dano</div>
-        <div class="modal-stats-grid">
-          <div class="modal-stat"><div class="modal-stat-label">Atributo</div><div class="modal-stat-value">${esc(card.Damage.Attribute)}</div></div>
-          ${card.Damage.Constant ? `<div class="modal-stat"><div class="modal-stat-label">Constante</div><div class="modal-stat-value">${card.Damage.Constant}</div></div>` : ''}
-          ${card.Damage.Dice && card.Damage.Dice !== 'None' ? `<div class="modal-stat"><div class="modal-stat-label">Dado</div><div class="modal-stat-value">${esc(card.Damage.Dice)}</div></div>` : ''}
-        </div>
-      </div>`;
-    }
-
-    // Flavor Text
-    if (card.FlavorText) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Texto de Ambientação</div>
-        <div class="modal-flavor">${esc(card.FlavorText)}</div>
-      </div>`;
-    }
-
-    // Summus & SummusData
-    if (card.Summus) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Summus</div>
-        <p style="color:var(--text-secondary);font-weight:500">${esc(formatSummusLabel(card.Summus))}</p>
-      </div>`;
-
-      const sd = card.SummusData;
-      if (sd && Object.keys(sd).length > 0) {
-        const dataEntries = [];
-        if (sd.timer != null) dataEntries.push(['Timer', sd.timer]);
-        if (sd.hp != null) dataEntries.push(['HP', sd.hp]);
-        if (sd.area != null) dataEntries.push(['Área', sd.area]);
-        if (sd.condition) dataEntries.push(['Condição', formatEffectText(sd.condition)]);
-        const sdText = sd.text || sd.Text;
-        if (sdText) dataEntries.push(['Texto', formatEffectText(sdText)]);
-
-        if (dataEntries.length > 0) {
-          html += `<div class="modal-section">
-            <div class="modal-section-title">Summus Data</div>
-            <div class="modal-summus-data">
-              ${dataEntries.map(([label, val]) => `
-                <div class="modal-summus-entry">
-                  <span class="modal-summus-label">${label}:</span>
-                  <span class="modal-summus-value">${val}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>`;
-        }
-      }
-    }
-
-    // Artist
-    if (card.Artist && card.Artist.trim()) {
-      html += `<div class="modal-section">
-        <div class="modal-section-title">Artista</div>
-        <p style="color:var(--text-secondary);font-weight:500">${esc(card.Artist.trim())}</p>
-      </div>`;
-    }
-
-    // Share bar
-    html += `
+      <div class="modal-info-list">
+        ${rows.join('')}
+      </div>
       <div class="modal-share-bar">
         <button class="btn-share" aria-label="Compartilhar carta">
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/></svg>
