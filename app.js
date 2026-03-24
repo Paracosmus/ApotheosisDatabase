@@ -1300,7 +1300,7 @@
       rows.push(`<div class="modal-info-row">
         <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.score}</span>
         <span class="modal-info-label">Score</span>
-        <span class="modal-info-value modal-info-value-bold">${card.Score}</span>
+        <span class="modal-info-value modal-info-value-bold">${card.Score} <span class="modal-score-inv">Inventário: ${Math.round(card.Score * 2 / 3)}</span></span>
       </div>`);
     }
 
