@@ -1362,6 +1362,25 @@
       <span class="modal-info-value"><span class="modal-bool-badge ${card.Coded ? 'modal-bool-yes' : 'modal-bool-no'}">${card.Coded ? 'Sim' : 'Não'}</span></span>
     </div>`);
 
+    // Trivia section
+    let triviaHTML = '';
+    if (card.Trivia && card.Trivia.length > 0) {
+      const triviaItems = card.Trivia.map((item, i) => `
+        <li class="trivia-item">
+          <span class="trivia-bullet">${i + 1}</span>
+          <span class="trivia-text">${esc(item)}</span>
+        </li>
+      `).join('');
+      triviaHTML = `
+        <div class="modal-trivia">
+          <div class="modal-trivia-header">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"/></svg>
+            <span>Trivia</span>
+          </div>
+          <ol class="trivia-list">${triviaItems}</ol>
+        </div>`;
+    }
+
     let html = `
       <div class="modal-body">
       <div class="modal-left">
@@ -1379,6 +1398,7 @@
       <div class="modal-info-list">
         ${rows.join('')}
       </div>
+      ${triviaHTML}
       <div class="modal-share-bar">
         <button class="btn-share" aria-label="Compartilhar carta">
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/></svg>
