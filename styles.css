@@ -46,11 +46,11 @@
 
 :root {
   /* ── Suit Colors ────────────────────────── */
-  --suit-house: #673AB7;
+  --suit-house: #123a6d;
   --suit-class: #F44336;
-  --suit-entity: #3F51B5;
+  --suit-entity: #123a6d;
   --suit-item: #FFC107;
-  --suit-skill: #2196F3;
+  --suit-skill: #123a6d;
   --suit-companion: #FF7043;
   --suit-event: #4CAF50;
   --suit-summus: #FF22B2;
@@ -66,7 +66,7 @@
   --rarity-common: #9E9E9E;
   --rarity-uncommon: #8BC34A;
   --rarity-rare: #01579B;
-  --rarity-epic: #673AB7;
+  --rarity-epic: #123a6d;
   --rarity-legendary: #FFC400;
 
   /* ── Surface / Theme (Light) ────────────── */
@@ -80,13 +80,13 @@
   --text-secondary: #52525b;
   --text-tertiary: #a1a1aa;
   --text-inverse: #fafafa;
-  --accent: #6d5cff;
-  --accent-hover: #5a48e6;
-  --accent-subtle: rgba(109, 92, 255, 0.08);
+  --accent: linear-gradient(90deg, #0d1a3a 0%, #123a6d 100%);
+  --accent-hover: linear-gradient(90deg, #123a6d 0%, #0d1a3a 100%);
+  --accent-subtle: rgba(18, 58, 109, 0.10);
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
-  --shadow-glow: 0 0 0 3px rgba(109, 92, 255, 0.15);
+  --shadow-glow: 0 0 0 3px rgba(18, 58, 109, 0.15);
   --glass-bg: rgba(255,255,255,0.72);
   --glass-border: rgba(255,255,255,0.2);
   --skeleton-base: #e4e4e7;
@@ -115,13 +115,13 @@
   --text-secondary: #a1a1aa;
   --text-tertiary: #52525b;
   --text-inverse: #09090b;
-  --accent: #818cf8;
-  --accent-hover: #6d5cff;
-  --accent-subtle: rgba(129, 140, 248, 0.1);
+  --accent: linear-gradient(90deg, #0d1a3a 0%, #123a6d 100%);
+  --accent-hover: linear-gradient(90deg, #123a6d 0%, #0d1a3a 100%);
+  --accent-subtle: rgba(18, 58, 109, 0.10);
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+  --shadow-glow: 0 0 0 3px rgba(18, 58, 109, 0.20);
   --glass-bg: rgba(17,17,19,0.8);
   --glass-border: rgba(255,255,255,0.06);
   --skeleton-base: #27272a;
@@ -326,8 +326,8 @@ body {
 }
 
 .logic-toggle.logic-and {
-  background: var(--accent);
-  border-color: var(--accent);
+  background-image: var(--accent);
+  border-color: #123a6d;
   color: #fff;
 }
 
@@ -547,8 +547,8 @@ body {
 }
 
 .ms-option-selected .ms-check {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: #123a6d;
+  border-color: #123a6d;
   color: #fff;
 }
 
@@ -596,7 +596,7 @@ body {
 }
 
 .toggle-btn.toggle-active {
-  background: var(--accent);
+  background-image: var(--accent);
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
@@ -670,7 +670,7 @@ body {
   align-items: center;
   gap: 2px;
   padding: 4px 6px 4px 10px;
-  background: var(--accent);
+  background-image: var(--accent);
   color: #fff;
   border-radius: var(--radius-sm);
   font-size: 0.8rem;
@@ -721,7 +721,7 @@ body {
   font-size: 0.875rem;
   color: var(--text-primary);
   background: var(--bg-secondary);
-  border: 1px solid var(--accent);
+  border: 1px solid #123a6d;
   border-radius: var(--radius-sm);
   outline: none;
   transition: all var(--transition-fast);
@@ -734,7 +734,7 @@ body {
 }
 
 .sort-add-row select:focus {
-  border-color: var(--accent-hover);
+  border-color: #123a6d;
   box-shadow: var(--shadow-glow);
 }
 
@@ -760,8 +760,8 @@ body {
 }
 
 .sort-add-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: #123a6d;
+  color: #123a6d;
 }
 
 .sort-add-btn:disabled {
@@ -816,7 +816,7 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
-  background: var(--accent);
+  background-image: var(--accent);
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -826,7 +826,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background-image: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -1654,8 +1654,8 @@ body {
 .modal-trivia {
   margin-bottom: 20px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(187, 134, 252, 0.06), rgba(3, 218, 198, 0.06));
-  border: 1px solid rgba(187, 134, 252, 0.15);
+  background: linear-gradient(135deg, rgba(40, 100, 200, 0.10), rgba(18, 58, 109, 0.08));
+  border: 1px solid rgba(40, 100, 200, 0.18);
   overflow: hidden;
 }
 
@@ -1668,8 +1668,8 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #BB86FC;
-  border-bottom: 1px solid rgba(187, 134, 252, 0.1);
+  color: #3a8bfd;
+  border-bottom: 1px solid rgba(40, 100, 200, 0.13);
 }
 
 .modal-trivia-header svg {
@@ -1690,7 +1690,7 @@ body {
   align-items: flex-start;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(187, 134, 252, 0.06);
+  border-bottom: 1px solid rgba(40, 100, 200, 0.08);
   transition: background 0.15s ease;
 }
 
@@ -1699,7 +1699,7 @@ body {
 }
 
 .trivia-item:hover {
-  background: rgba(187, 134, 252, 0.04);
+  background: rgba(40, 100, 200, 0.07);
 }
 
 .trivia-bullet {
@@ -1710,8 +1710,8 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(187, 134, 252, 0.12);
-  color: #BB86FC;
+  background: rgba(40, 100, 200, 0.18);
+  color: #3a8bfd;
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
