@@ -55,7 +55,7 @@
     { key: 'essence', label: 'Essência', type: 'number', field: 'Essence' },
     { key: 'stamina', label: 'Estamina', type: 'number', field: 'Stamina' },
     { key: 'style', label: 'Estilo', type: 'string', field: 'Style' },
-    { key: 'format', label: 'Formato', type: 'array', field: 'Formats' },
+    { key: 'format', label: 'Formato', type: 'string', field: 'Format' },
     { key: 'inventorySlots', label: 'Inventory Slots', type: 'slot', field: 'InventorySlots', bonus: 'InventorySlotsBonus' },
     { key: 'lignum', label: 'Lignum', type: 'string', field: 'Lignum' },
     { key: 'mana', label: 'Mana', type: 'number', field: 'Mana' },
@@ -452,8 +452,8 @@
       // Collection
       if (card.Collection) collections.add(card.Collection);
 
-      // Formats
-      if (card.Formats) card.Formats.forEach((f) => formats.add(f));
+      // Format
+      if (card.Format && card.Format.trim() && card.Format.trim() !== 'Standard') formats.add(card.Format.trim());
 
       // Slots (combine base and bonus variants)
       const eqSlot = card.EquipmentSlots ?? card.EquipmentSlotsBonus;
@@ -734,14 +734,9 @@
         if (!card.Collection || !collectionVals.includes(card.Collection)) return false;
       }
 
-      // Formats
+      // Format
       if (formatVals.length > 0) {
-        if (!card.Formats || card.Formats.length === 0) return false;
-        if (state.filterLogic.format === 'and') {
-          if (!formatVals.every((v) => card.Formats.includes(v))) return false;
-        } else {
-          if (!formatVals.some((v) => card.Formats.includes(v))) return false;
-        }
+        if (!card.Format || !formatVals.includes(card.Format)) return false;
       }
 
       // Artist
@@ -1332,12 +1327,12 @@
       </div>`);
     }
 
-    // Formats
-    if (card.Formats && card.Formats.length > 0) {
+    // Format (hide if Standard)
+    if (card.Format && card.Format.trim() && card.Format.trim() !== 'Standard') {
       rows.push(`<div class="modal-info-row">
         <span class="modal-info-icon modal-info-icon-svg">${MODAL_ICONS.formats}</span>
-        <span class="modal-info-label">Formatos</span>
-        <span class="modal-info-value">${card.Formats.map(f => `<span class="badge badge-format">${esc(f)}</span>`).join(' ')}</span>
+        <span class="modal-info-label">Formato</span>
+        <span class="modal-info-value"><span class="badge badge-format">${esc(card.Format)}</span></span>
       </div>`);
     }
 
