@@ -46,11 +46,11 @@
 
 :root {
   /* ── Suit Colors ────────────────────────── */
-  --suit-house: #123a6d;
+  --suit-house: #673AB7;
   --suit-class: #F44336;
-  --suit-entity: #123a6d;
+  --suit-entity: #3F51B5;
   --suit-item: #FFC107;
-  --suit-skill: #123a6d;
+  --suit-skill: #2196F3;
   --suit-companion: #FF7043;
   --suit-event: #4CAF50;
   --suit-summus: #FF22B2;
