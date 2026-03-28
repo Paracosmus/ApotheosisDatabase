@@ -1773,4 +1773,31 @@
     setupAuthGate();
   }
 
+  // Filtros Avançados: toggle exibição
+  function setupAdvancedFiltersToggle() {
+    const btn = document.getElementById('toggle-advanced-filters');
+    const adv = document.getElementById('advanced-filters');
+    if (!btn || !adv) return;
+    btn.addEventListener('click', () => {
+      const isOpen = adv.style.display === '' || adv.style.display === 'block';
+      if (isOpen) {
+        adv.style.display = 'none';
+        btn.classList.remove('open');
+      } else {
+        adv.style.display = 'block';
+        btn.classList.add('open');
+      }
+    });
+    // Sempre inicia minimizado
+    adv.style.display = 'none';
+    btn.classList.remove('open');
+  }
+
+  // Inicialização dos filtros avançados (toggle)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAdvancedFiltersToggle);
+  } else {
+    setupAdvancedFiltersToggle();
+  }
+
 })();
