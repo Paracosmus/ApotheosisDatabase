@@ -1,3 +1,18 @@
+// Mostrar pill DEV na barra de topo se ?dev=true
+function showDevPillIfNeeded() {
+  const params = new URLSearchParams(window.location.search);
+  const dev = params.get('dev');
+  const pill = document.getElementById('dev-pill');
+  if (pill) {
+    pill.style.display = (dev === 'true') ? 'inline-flex' : 'none';
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', showDevPillIfNeeded);
+} else {
+  showDevPillIfNeeded();
+}
 /* ═══════════════════════════════════════════════
    Apotheosis Database — Main Application
    ═══════════════════════════════════════════════ */
@@ -10,6 +25,7 @@
     API_PROD: 'https://get.lunehub.com/apotheosis/source/cards.json',
     API_DEV: 'https://get.lunehub.com/apotheosis/source/dev-cards.json',
     IMAGE_BASE: 'https://get.lunehub.com/apotheosis/prints/',
+    IMAGE_DEV: 'https://get.lunehub.com/apotheosis/dev-prints/',
     IMAGE_EXT: '.avif',
     VIRTUAL_BUFFER: 10,
     BATCH_SIZE: 40,
@@ -838,8 +854,13 @@
   }
 
   // ── Card Renderers ────────────────────────
+  function isDevMode() {
+    return new URLSearchParams(window.location.search).get('dev') === 'true';
+  }
+
   function getImageUrl(card) {
-    return CONFIG.IMAGE_BASE + card.Id + CONFIG.IMAGE_EXT;
+    const base = isDevMode() ? CONFIG.IMAGE_DEV : CONFIG.IMAGE_BASE;
+    return base + card.Id + CONFIG.IMAGE_EXT;
   }
 
   function getSuitClass(suit) {
