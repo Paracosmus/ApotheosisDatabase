@@ -25,7 +25,6 @@ if (document.readyState === 'loading') {
     API_PROD: 'https://get.lunehub.com/apotheosis/source/cards.json',
     API_DEV: 'https://get.lunehub.com/apotheosis/source/dev-cards.json',
     IMAGE_BASE: 'https://get.lunehub.com/apotheosis/prints/',
-    IMAGE_DEV: 'https://get.lunehub.com/apotheosis/prints/', // 'https://get.lunehub.com/apotheosis/dev-prints/',
     IMAGE_EXT: '.avif',
     VIRTUAL_BUFFER: 10,
     BATCH_SIZE: 40,
@@ -854,13 +853,8 @@ if (document.readyState === 'loading') {
   }
 
   // ── Card Renderers ────────────────────────
-  function isDevMode() {
-    return new URLSearchParams(window.location.search).get('dev') === 'true';
-  }
-
   function getImageUrl(card) {
-    const base = isDevMode() ? CONFIG.IMAGE_DEV : CONFIG.IMAGE_BASE;
-    return base + card.Id + CONFIG.IMAGE_EXT;
+    return CONFIG.IMAGE_BASE + card.Id + CONFIG.IMAGE_EXT;
   }
 
   function getSuitClass(suit) {
