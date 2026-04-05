@@ -1119,29 +1119,56 @@ if (document.readyState === 'loading') {
     setupModalSwipe();
   }
 
+  let _navLocked = false;
+
   function navigateModal(direction) {
-    if (state.filteredCards.length === 0) return;
+    if (state.filteredCards.length === 0 || _navLocked) return;
+    _navLocked = true;
+
     let idx = state.currentCardIndex + direction;
     if (idx < 0) idx = state.filteredCards.length - 1;
     if (idx >= state.filteredCards.length) idx = 0;
     const card = state.filteredCards[idx];
     state.currentCardIndex = idx;
 
-    dom.modalContent.innerHTML = buildModalHTML(card);
+    // Slide-out current content
+    const outClass = direction > 0 ? 'modal-slide-out-left' : 'modal-slide-out-right';
+    const inClass  = direction > 0 ? 'modal-slide-in-right' : 'modal-slide-in-left';
 
-    // Update URL
-    const url = new URL(window.location);
-    url.searchParams.set('card', card.Id);
-    history.replaceState(null, '', url);
+    dom.modalContent.classList.add(outClass);
 
-    // Re-setup share button
-    const shareBtn = dom.modalContent.querySelector('.btn-share');
-    if (shareBtn) {
-      shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
+    function afterSlideOut() {
+      dom.modalContent.removeEventListener('animationend', afterSlideOut);
+      dom.modalContent.classList.remove(outClass);
+
+      // Swap content
+      dom.modalContent.innerHTML = buildModalHTML(card);
+
+      // Update URL
+      const url = new URL(window.location);
+      url.searchParams.set('card', card.Id);
+      history.replaceState(null, '', url);
+
+      // Re-setup share button
+      const shareBtn = dom.modalContent.querySelector('.btn-share');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
+      }
+
+      // Slide-in new content
+      dom.modalContent.classList.add(inClass);
+      function afterSlideIn() {
+        dom.modalContent.removeEventListener('animationend', afterSlideIn);
+        dom.modalContent.classList.remove(inClass);
+        _navLocked = false;
+      }
+      dom.modalContent.addEventListener('animationend', afterSlideIn, { once: true });
+
+      // Re-setup swipe
+      setupModalSwipe();
     }
 
-    // Re-setup swipe
-    setupModalSwipe();
+    dom.modalContent.addEventListener('animationend', afterSlideOut, { once: true });
   }
 
   function setupModalSwipe() {

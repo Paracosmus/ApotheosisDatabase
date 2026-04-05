@@ -1280,6 +1280,29 @@ body {
   padding: 48px 16px 32px;
 }
 
+/* Slide animations for card navigation */
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(-60px); opacity: 0; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(60px); opacity: 0; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(60px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-60px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.modal-slide-out-left  { animation: slideOutLeft  200ms ease-in forwards; }
+.modal-slide-out-right { animation: slideOutRight 200ms ease-in forwards; }
+.modal-slide-in-right  { animation: slideInRight  200ms ease-out forwards; }
+.modal-slide-in-left   { animation: slideInLeft   200ms ease-out forwards; }
+
 /* Modal Image */
 .modal-hero {
   width: 100%;
