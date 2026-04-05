@@ -1089,6 +1089,9 @@ if (document.readyState === 'loading') {
 
   // ── Card Detail Modal ─────────────────────
   function openModal(card) {
+    // Track current card index for navigation
+    state.currentCardIndex = state.filteredCards.findIndex(c => c.Id === card.Id);
+
     dom.modalContent.innerHTML = buildModalHTML(card);
     dom.modalOverlay.classList.remove('hidden');
 
@@ -1111,6 +1114,72 @@ if (document.readyState === 'loading') {
     if (shareBtn) {
       shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
     }
+
+    // Setup swipe for mobile
+    setupModalSwipe();
+  }
+
+  function navigateModal(direction) {
+    if (state.filteredCards.length === 0) return;
+    let idx = state.currentCardIndex + direction;
+    if (idx < 0) idx = state.filteredCards.length - 1;
+    if (idx >= state.filteredCards.length) idx = 0;
+    const card = state.filteredCards[idx];
+    state.currentCardIndex = idx;
+
+    dom.modalContent.innerHTML = buildModalHTML(card);
+
+    // Update URL
+    const url = new URL(window.location);
+    url.searchParams.set('card', card.Id);
+    history.replaceState(null, '', url);
+
+    // Re-setup share button
+    const shareBtn = dom.modalContent.querySelector('.btn-share');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
+    }
+
+    // Re-setup swipe
+    setupModalSwipe();
+  }
+
+  function setupModalSwipe() {
+    const panel = dom.modalPanel;
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+
+    // Remove previous listeners by replacing element clone — instead use flags
+    panel._swipeCleanup?.();
+
+    function onTouchStart(e) {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      tracking = true;
+    }
+
+    function onTouchEnd(e) {
+      if (!tracking) return;
+      tracking = false;
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const dx = endX - startX;
+      const dy = endY - startY;
+      // Only navigate if horizontal swipe is significant and dominant
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        navigateModal(dx < 0 ? 1 : -1);
+      }
+    }
+
+    panel.addEventListener('touchstart', onTouchStart, { passive: true });
+    panel.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    panel._swipeCleanup = () => {
+      panel.removeEventListener('touchstart', onTouchStart);
+      panel.removeEventListener('touchend', onTouchEnd);
+    };
   }
 
   function closeModal() {
@@ -1625,8 +1694,15 @@ if (document.readyState === 'loading') {
       if (e.target === dom.modalOverlay) closeModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !dom.modalOverlay.classList.contains('hidden')) {
+      if (dom.modalOverlay.classList.contains('hidden')) return;
+      if (e.key === 'Escape') {
         closeModal();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateModal(1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateModal(-1);
       }
     });
   }
