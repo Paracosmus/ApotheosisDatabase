@@ -252,6 +252,9 @@ if (document.readyState === 'loading') {
     multiSelects: {},
     toggleFilters: { coded: null, reviewed: null },
     filterLogic: { knowledge: 'or', craft: 'or', tag: 'or', format: 'or', specifier: 'or' },
+    currentCardIndex: -1,
+    modalCloseTimer: null,
+    modalImageRequestToken: 0,
   };
 
   // ── DOM References ────────────────────────
@@ -1088,11 +1091,86 @@ if (document.readyState === 'loading') {
   }
 
   // ── Card Detail Modal ─────────────────────
+  function clearModalCloseTimer() {
+    if (state.modalCloseTimer) {
+      clearTimeout(state.modalCloseTimer);
+      state.modalCloseTimer = null;
+    }
+  }
+
+  function setupModalShareButton(card) {
+    const shareBtn = dom.modalContent.querySelector('.btn-share');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
+    }
+  }
+
+  function loadModalImage(card) {
+    const imageEl = dom.modalContent.querySelector('[data-modal-card-image]');
+    const heroEl = dom.modalContent.querySelector('.modal-hero');
+    const fallbackEl = dom.modalContent.querySelector('.modal-hero-fallback');
+    if (!imageEl || !heroEl) return;
+
+    const imageUrl = getImageUrl(card);
+    const requestToken = ++state.modalImageRequestToken;
+    let retried = false;
+
+    heroEl.classList.add('modal-hero-loading');
+    heroEl.classList.remove('modal-hero-error');
+    imageEl.classList.remove('is-loaded');
+    if (fallbackEl) fallbackEl.hidden = true;
+
+    imageEl.onload = () => {
+      if (requestToken !== state.modalImageRequestToken) return;
+      heroEl.classList.remove('modal-hero-loading');
+      heroEl.classList.remove('modal-hero-error');
+      imageEl.classList.add('is-loaded');
+    };
+
+    imageEl.onerror = () => {
+      if (requestToken !== state.modalImageRequestToken) return;
+
+      if (!retried) {
+        retried = true;
+        imageEl.removeAttribute('src');
+        requestAnimationFrame(() => {
+          if (requestToken !== state.modalImageRequestToken) return;
+          imageEl.src = imageUrl;
+        });
+        return;
+      }
+
+      heroEl.classList.remove('modal-hero-loading');
+      heroEl.classList.add('modal-hero-error');
+      imageEl.classList.remove('is-loaded');
+      if (fallbackEl) fallbackEl.hidden = false;
+    };
+
+    imageEl.decoding = 'async';
+    imageEl.loading = 'eager';
+    imageEl.fetchPriority = 'high';
+    imageEl.alt = card.Name;
+    imageEl.src = imageUrl;
+
+    if (imageEl.complete && imageEl.naturalWidth > 0) {
+      imageEl.onload();
+    }
+  }
+
+  function renderModalCard(card) {
+    dom.modalContent.innerHTML = buildModalHTML(card);
+    setupModalShareButton(card);
+    loadModalImage(card);
+    setupModalSwipe();
+  }
+
   function openModal(card) {
+    clearModalCloseTimer();
+
     // Track current card index for navigation
     state.currentCardIndex = state.filteredCards.findIndex(c => c.Id === card.Id);
 
-    dom.modalContent.innerHTML = buildModalHTML(card);
+    renderModalCard(card);
     dom.modalOverlay.classList.remove('hidden');
 
     // Trigger reflow then add visible class for animation
@@ -1108,15 +1186,6 @@ if (document.readyState === 'loading') {
     const url = new URL(window.location);
     url.searchParams.set('card', card.Id);
     history.replaceState(null, '', url);
-
-    // Setup share button
-    const shareBtn = dom.modalContent.querySelector('.btn-share');
-    if (shareBtn) {
-      shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
-    }
-
-    // Setup swipe for mobile
-    setupModalSwipe();
   }
 
   let _navLocked = false;
@@ -1142,18 +1211,12 @@ if (document.readyState === 'loading') {
       dom.modalContent.classList.remove(outClass);
 
       // Swap content
-      dom.modalContent.innerHTML = buildModalHTML(card);
+      renderModalCard(card);
 
       // Update URL
       const url = new URL(window.location);
       url.searchParams.set('card', card.Id);
       history.replaceState(null, '', url);
-
-      // Re-setup share button
-      const shareBtn = dom.modalContent.querySelector('.btn-share');
-      if (shareBtn) {
-        shareBtn.addEventListener('click', () => shareCard(card, shareBtn));
-      }
 
       // Slide-in new content
       dom.modalContent.classList.add(inClass);
@@ -1164,8 +1227,6 @@ if (document.readyState === 'loading') {
       }
       dom.modalContent.addEventListener('animationend', afterSlideIn, { once: true });
 
-      // Re-setup swipe
-      setupModalSwipe();
     }
 
     dom.modalContent.addEventListener('animationend', afterSlideOut, { once: true });
@@ -1210,12 +1271,15 @@ if (document.readyState === 'loading') {
   }
 
   function closeModal() {
+    clearModalCloseTimer();
+    state.modalImageRequestToken += 1;
     dom.modalOverlay.classList.remove('visible');
     document.body.style.overflow = '';
 
-    setTimeout(() => {
+    state.modalCloseTimer = setTimeout(() => {
       dom.modalOverlay.classList.add('hidden');
       dom.modalContent.innerHTML = '';
+      state.modalCloseTimer = null;
     }, 400);
 
     // Remove card param from URL
@@ -1491,7 +1555,9 @@ if (document.readyState === 'loading') {
       <div class="modal-body">
       <div class="modal-left">
         <div class="modal-hero">
-          <img src="${getImageUrl(card)}" alt="${esc(card.Name)}" loading="eager">
+          <div class="modal-hero-skeleton" aria-hidden="true"></div>
+          <img data-modal-card-image alt="${esc(card.Name)}">
+          <div class="modal-hero-fallback" hidden>Não foi possível carregar a imagem desta carta.</div>
         </div>
       </div>
       <div class="modal-right">

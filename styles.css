@@ -1305,17 +1305,69 @@ body {
 
 /* Modal Image */
 .modal-hero {
+  position: relative;
   width: 100%;
   max-width: 350px;
   margin: 0 auto 24px;
+  aspect-ratio: 7 / 12;
   border-radius: var(--radius-md);
   overflow: hidden;
+  background: var(--bg-tertiary);
   box-shadow: var(--shadow-lg);
 }
 
+.modal-hero-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  transition: opacity var(--transition-fast);
+}
+
 .modal-hero img {
+  position: relative;
   width: 100%;
+  height: 100%;
   display: block;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.modal-hero img.is-loaded {
+  opacity: 1;
+}
+
+.modal-hero:not(.modal-hero-loading) .modal-hero-skeleton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-hero-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.08));
+}
+
+.modal-hero-fallback[hidden] {
+  display: none;
+}
+
+.dark .modal-hero-fallback {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.06));
+}
+
+.modal-hero-error .modal-hero-skeleton {
+  opacity: 0;
 }
 
 /* Modal Card Header */
