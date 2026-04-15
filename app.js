@@ -44,6 +44,14 @@ if (document.readyState === 'loading') {
 
   const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
   const SUIT_ORDER = ['House', 'Class', 'Entity', 'Item', 'Skill', 'Companion', 'Event', 'Summus'];
+  const CARD_STYLE_ORDER = ['normal', 'texture', 'glass', 'full-art', 'animated'];
+  const CARD_STYLE_LABELS = {
+    normal: 'Normal',
+    texture: 'Texture',
+    glass: 'Glass',
+    'full-art': 'Full Art',
+    animated: 'Animated',
+  };
 
   const PRICE_TO_VALUE = {
     1: 1, 2: 5, 3: 10, 4: 20, 5: 25, 6: 50, 7: 75, 8: 100,
@@ -69,7 +77,7 @@ if (document.readyState === 'loading') {
     { key: 'specifier', label: 'Especificador', type: 'specifier' },
     { key: 'essence', label: 'Essência', type: 'number', field: 'Essence' },
     { key: 'stamina', label: 'Estamina', type: 'number', field: 'Stamina' },
-    { key: 'style', label: 'Estilo', type: 'string', field: 'Style' },
+    { key: 'style', label: 'Estilo', type: 'cardStyle', field: 'CardStyle' },
     { key: 'format', label: 'Formato', type: 'string', field: 'Format' },
     { key: 'inventorySlots', label: 'Inventory Slots', type: 'slot', field: 'InventorySlots', bonus: 'InventorySlotsBonus' },
     { key: 'lignum', label: 'Lignum', type: 'string', field: 'Lignum' },
@@ -388,6 +396,7 @@ if (document.readyState === 'loading') {
     const inventorySlots = new Set();
     const artists = new Set();
     const summusValues = new Set();
+    const cardStyles = new Set();
 
     cards.forEach((card) => {
       if (card.Suit) suits.add(card.Suit);
@@ -485,6 +494,9 @@ if (document.readyState === 'loading') {
 
       // Summus
       if (card.Summus) summusValues.add(card.Summus);
+
+      // CardStyle + animation state
+      getCardStyleTags(card).forEach((style) => cardStyles.add(style));
     });
 
     const ms = state.multiSelects;
@@ -511,11 +523,12 @@ if (document.readyState === 'loading') {
     ms['ms-support-slots']?.setOptions([...supportSlots].sort((a, b) => Number(a) - Number(b)));
     ms['ms-inventory-slots']?.setOptions([...inventorySlots].sort((a, b) => Number(a) - Number(b)));
     ms['ms-artist']?.setOptions([...artists].sort((a, b) => a.localeCompare(b, 'pt-BR')));
-    ms['ms-style']?.setOptions([
-      { value: 'normal', label: 'Normal' },
-      { value: 'full-art', label: 'Full-Art' },
-      { value: 'animated', label: 'Animated' },
-    ]);
+    ms['ms-style']?.setOptions(
+      sortByOrder([...cardStyles], CARD_STYLE_ORDER).map((value) => ({
+        value,
+        label: getCardStyleLabel(value),
+      }))
+    );
     ms['ms-summus']?.setOptions([...summusValues].sort().map((v) => ({ value: v, label: formatSummusLabel(v) })));
 
     // Price – show display values sorted numerically
@@ -762,12 +775,9 @@ if (document.readyState === 'loading') {
         if (!artistVals.includes((card.Artist || '').trim())) return false;
       }
 
-      // Style (Normal / Full-Art / Animated)
+      // Style (CardStyle + animated detection)
       if (styleVals.length > 0) {
-        const cardStyles = [];
-        if (card.FullArt) cardStyles.push('full-art');
-        if (card.Media) cardStyles.push('animated');
-        if (!card.FullArt && !card.Media) cardStyles.push('normal');
+        const cardStyles = getCardStyleTags(card);
         if (!styleVals.some((v) => cardStyles.includes(v))) return false;
       }
 
@@ -818,6 +828,16 @@ if (document.readyState === 'loading') {
       }
       case 'price':
         return getPriceValue(a[fieldDef.field]) - getPriceValue(b[fieldDef.field]);
+      case 'cardStyle': {
+        const styleA = getCardStyleValue(a);
+        const styleB = getCardStyleValue(b);
+        const indexA = CARD_STYLE_ORDER.indexOf(styleA);
+        const indexB = CARD_STYLE_ORDER.indexOf(styleB);
+        if (indexA === -1 && indexB === -1) {
+          return getCardStyleLabel(styleA).localeCompare(getCardStyleLabel(styleB), 'pt-BR');
+        }
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+      }
       case 'specifier': {
         const getSpecs = (c) => {
           const s = [];
@@ -1379,10 +1399,45 @@ if (document.readyState === 'loading') {
     return LIGNUM_MAP[color] || { icon: '\uE933', color: 'var(--text-tertiary)' };
   }
 
+  function normalizeCardStyleValue(rawValue) {
+    const source = String(rawValue || '').trim();
+    if (!source) return '';
+
+    const normalized = source.toLowerCase().replace(/[\s_-]+/g, '');
+    if (normalized === 'standard' || normalized === 'normal' || normalized === 'white') return 'normal';
+    if (normalized === 'texture') return 'texture';
+    if (normalized === 'glass') return 'glass';
+    if (normalized === 'fullart' || normalized === 'full') return 'full-art';
+
+    return source.toLowerCase().replace(/[\s_]+/g, '-');
+  }
+
+  function getCardStyleValue(card) {
+    const explicitStyle = normalizeCardStyleValue(card.CardStyle ?? card.Style);
+    if (explicitStyle) return explicitStyle;
+    if (card.FullArt) return 'full-art';
+    return 'normal';
+  }
+
+  function getCardStyleTags(card) {
+    const tags = [];
+    const baseStyle = getCardStyleValue(card);
+    if (baseStyle) tags.push(baseStyle);
+    if (card.Media) tags.push('animated');
+    if (tags.length === 0) tags.push('normal');
+    return [...new Set(tags)];
+  }
+
+  function getCardStyleLabel(styleValue) {
+    if (!styleValue) return 'Normal';
+    return CARD_STYLE_LABELS[styleValue] || styleValue
+      .split('-')
+      .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : '')
+      .join(' ');
+  }
+
   function getCardStyle(card) {
-    if (card.FullArt) return 'Full-art';
-    if (card.Media) return 'Animated';
-    return 'Normal';
+    return getCardStyleTags(card).map(getCardStyleLabel).join(' • ');
   }
 
   function getCardType(card) {
